@@ -268,6 +268,62 @@ tr:nth-child(even) td{background:rgba(245,230,74,0.2)}
 
 /* EVAL EMPTY */
 .eempty{text-align:center;padding:3rem;background:#F5ECD7;border:1.5px solid #0A0800;border-radius:4px}
+
+/* REPORT */
+.rpage{margin-bottom:1.5rem}
+.rsection-title{font-family:Georgia,serif;font-size:16px;font-weight:700;color:#0A0800;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:2px solid #0A0800}
+.rmet{background:#0A0800;border-radius:2px;padding:.75rem 1rem;text-align:center}
+.rmet-v{font-size:18px;font-weight:700;font-family:monospace;color:#D4AF6E}
+.rmet-l{font-size:10px;color:rgba(245,236,215,0.6);margin-top:2px;font-weight:600}
+.rngo-card{background:#F5ECD7;border:1.5px solid #0A0800;border-radius:4px;padding:.875rem 1rem}
+.rngo-card.selected{background:#0A0800}
+.rngo-card.selected *{color:#F5ECD7 !important}
+.rngo-card.selected .ptag{background:#D4AF6E !important;color:#0A0800 !important}
+.rcond{background:#F5ECD7;border:1.5px solid #0A0800;border-radius:4px;padding:.75rem 1rem;margin-bottom:8px}
+.rstep{background:#F5ECD7;border:1px solid rgba(10,8,0,0.2);border-radius:4px;padding:.75rem 1rem}
+.rstep-num{width:22px;height:22px;border-radius:50%;background:#0A0800;color:#D4AF6E;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:8px}
+
+/* PRINT STYLES */
+@media print{
+  .topnav,.filterbar,.cart-actions,#cartBar,.ehdr .btn-s,.ehdr .btn-p,.navbar{display:none!important}
+  .view{display:none!important}
+  #reportView{display:block!important}
+  body{background:#fff!important;color:#000!important;font-size:12pt}
+  .eshell{border:none!important;border-radius:0!important}
+  .ehdr{background:#1a1a18!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .rpage{page-break-inside:avoid;margin-bottom:1.5rem}
+  .rsection-title{page-break-after:avoid}
+  .rmet,.rngo-card.selected,.card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:1.5cm;size:A4}
+}
+
+
+/* ACCESS DETAILS */
+.access-panel{display:none;margin-top:8px}
+.access-panel.open{display:block;background:rgba(10,8,0,0.04);border:1.5px solid #0A0800;border-radius:3px;padding:10px}
+.access-toggle{
+  font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:7px 12px;border-radius:2px;
+  border:2px solid #0A0800;
+  background:#0A0800;color:#D4AF6E;
+  cursor:pointer;width:100%;text-align:center;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.access-toggle:hover{background:#D4AF6E;color:#0A0800;border-color:#D4AF6E}
+.access-toggle.open{background:#D4AF6E;color:#0A0800;border-color:#D4AF6E}
+.nc.incart .access-toggle{border-color:#D4AF6E;background:#D4AF6E;color:#0A0800}
+.nc.incart .access-toggle:hover{background:#0A0800;color:#D4AF6E;border-color:#D4AF6E}
+.nc.incart .access-toggle.open{background:#0A0800;color:#D4AF6E;border-color:#D4AF6E}
+.access-links{display:flex;flex-direction:column;gap:4px;margin-top:7px}
+.alink{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:#0A0800;text-decoration:none;padding:6px 8px;border-radius:2px;border:1px solid rgba(10,8,0,0.2);background:#F5ECD7;transition:all .15s}
+.alink:hover{background:#D4AF6E;border-color:#0A0800;color:#0A0800;transform:translateX(2px)}
+.nc.incart .alink{color:#F5ECD7;border-color:rgba(245,236,215,0.2);background:rgba(245,236,215,0.05)}
+.nc.incart .alink:hover{background:#D4AF6E;color:#0A0800;border-color:#D4AF6E}
+.alink-icon{width:16px;height:16px;border-radius:2px;background:#0A0800;color:#D4AF6E;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.nc.incart .alink-icon{background:#D4AF6E;color:#0A0800}
+.fcra-note{font-size:10px;font-weight:600;color:#2C1F0E;margin-top:6px;padding:6px 8px;background:#D4AF6E;border-radius:2px;border-left:3px solid #0A0800}
+.nc.incart .fcra-note{color:#0A0800;background:#D4AF6E;border-left-color:#0A0800}
+
 </style>
 </head>
 <body>
@@ -281,6 +337,7 @@ tr:nth-child(even) td{background:rgba(245,230,74,0.2)}
     <button class="tntab on" onclick="showView('discover',this)">Discover</button>
     <button class="tntab" onclick="showView('evaluate',this)">Evaluate</button>
     <button class="tntab" onclick="showView('impact',this)">Impact Assessment</button>
+    <button class="tntab" onclick="showView('report',this)">Prepare Report</button>
   </div>
   <div class="nav-cart">
     Cart &nbsp;<span class="cart-badge" id="navBadge">0</span>
@@ -476,6 +533,119 @@ tr:nth-child(even) td{background:rgba(245,230,74,0.2)}
 </div>
 </div>
 
+
+<!-- REPORT VIEW -->
+<div id="reportView" class="view">
+<div class="page">
+  <div class="eshell">
+    <div class="ehdr">
+      <div>
+        <div class="ehdr-label">Astha Deep &middot; M&amp;E &amp; CSR Advisory</div>
+        <div class="ehdr-title">CSR Partner Evaluation Report</div>
+        <div class="ehdr-sub">Auto-generated from your evaluation &middot; Export as PDF</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-s" style="border-color:#D4AF6E;color:#D4AF6E" onclick="showView('evaluate',document.querySelectorAll('.tntab')[1])">&#8592; Back to Evaluation</button>
+        <button class="btn-p" style="background:#D4AF6E;color:#0A0800;border-color:#D4AF6E" onclick="exportPDF()">&#8595; Download PDF</button>
+      </div>
+    </div>
+    <div class="ebody">
+      <div id="reportEmpty" style="text-align:center;padding:3rem;color:#6B4F2A">
+        <div style="font-size:2rem;margin-bottom:.75rem">&#9998;</div>
+        <p style="font-size:14px;font-weight:700;margin-bottom:.5rem">No evaluation to report</p>
+        <p style="font-size:13px;color:#6B4F2A;margin-bottom:1rem">Add NGOs to your cart and complete at least Step 3 of the evaluation first.</p>
+        <button class="btn-p" style="background:#0A0800;color:#F5ECD7;border-color:#0A0800" onclick="showView('discover',document.querySelectorAll('.tntab')[0])">Go to Discover</button>
+      </div>
+      <div id="reportContent" style="display:none">
+
+        <!-- COVER -->
+        <div class="rpage" id="rCover">
+          <div style="background:#0A0800;border-radius:4px;padding:2.5rem;margin-bottom:1.5rem">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#D4AF6E;margin-bottom:.5rem">Astha Deep &middot; M&amp;E &amp; CSR Advisory</div>
+            <div style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#F5ECD7;margin-bottom:.5rem;line-height:1.3">CSR Partner Evaluation Report</div>
+            <div style="font-size:13px;color:rgba(245,236,215,0.65);margin-bottom:1.5rem" id="rSubtitle"></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px" id="rMetrics"></div>
+          </div>
+          <div class="card" style="margin-bottom:1rem">
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B4F2A;margin-bottom:.75rem">Executive Summary</p>
+            <p style="font-size:13px;color:#2C1F0E;line-height:1.8" id="rExecSummary"></p>
+          </div>
+        </div>
+
+        <!-- PORTFOLIO OVERVIEW -->
+        <div class="rpage" id="rOverview">
+          <div class="rsection-title">1. Portfolio Overview &amp; Shortlisted Partners</div>
+          <div id="rPortfolioCards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem"></div>
+        </div>
+
+
+        <!-- MAP SECTION -->
+        <div class="rpage" id="rMap">
+          <div class="rsection-title">2. Geographic Reach &amp; Deployment Map</div>
+          <p style="font-size:12px;color:#6B4F2A;margin-bottom:.875rem;line-height:1.6">Geographic footprint of evaluated partners across Karnataka and Maharashtra. Dot size reflects relative beneficiary reach. Hover for details when viewing online.</p>
+          <div style="display:grid;grid-template-columns:1fr 220px;gap:1rem;align-items:start">
+            <div>
+              <div style="background:#E8DFC8;border:1.5px solid #0A0800;border-radius:4px;overflow:hidden">
+                <svg id="rMapSvg" viewBox="0 0 580 560" style="width:100%;display:block"></svg>
+              </div>
+              <div style="display:flex;gap:16px;margin-top:.625rem;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#2C1F0E"><div style="width:10px;height:10px;border-radius:50%;background:#378ADD;border:1.5px solid #0A0800"></div>Education</div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#2C1F0E"><div style="width:10px;height:10px;border-radius:50%;background:#1D9E75;border:1.5px solid #0A0800"></div>Livelihoods</div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#2C1F0E"><div style="width:10px;height:10px;border-radius:50%;background:#534AB7;border:1.5px solid #0A0800"></div>Mixed</div>
+                <div style="font-size:10px;color:#6B4F2A;font-style:italic">Dot size proportional to beneficiary reach</div>
+              </div>
+            </div>
+            <div>
+              <p style="font-size:10px;font-weight:700;color:#6B4F2A;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Partner locations</p>
+              <div id="rMapList" style="display:flex;flex-direction:column;gap:6px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCORING -->
+        <div class="rpage" id="rScoring">
+          <div class="rsection-title">3. Weighted Scoring Matrix</div>
+          <p style="font-size:12px;color:#6B4F2A;margin-bottom:.875rem;line-height:1.6">Six-dimension evaluation framework. Scores out of 10. Dimension weights reflect client priority profile.</p>
+          <div id="rScoringMatrix" style="margin-bottom:1rem;overflow-x:auto"></div>
+          <div style="margin-top:1rem;position:relative;height:200px"><canvas id="rChart"></canvas></div>
+        </div>
+
+        <!-- FINANCIAL -->
+        <div class="rpage" id="rFinancial">
+          <div class="rsection-title">4. Financial Health &amp; Compliance Assessment</div>
+          <div id="rFinContent"></div>
+        </div>
+
+        <!-- RECOMMENDATION -->
+        <div class="rpage" id="rRec">
+          <div class="rsection-title">5. Recommendation &amp; Portfolio Allocation</div>
+          <div id="rRecContent"></div>
+          <div style="margin-top:1.25rem" class="card">
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B4F2A;margin-bottom:.75rem">Recommended Portfolio Allocation</p>
+            <div id="rAllocContent"></div>
+          </div>
+        </div>
+
+        <!-- CONDITIONS & NEXT STEPS -->
+        <div class="rpage" id="rNext">
+          <div class="rsection-title">6. Conditions, Risks &amp; Next Steps</div>
+          <div id="rConditions"></div>
+          <div style="margin-top:1.25rem" class="card">
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B4F2A;margin-bottom:.75rem">Recommended Next Steps</p>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px" id="rNextSteps"></div>
+          </div>
+          <div style="margin-top:1rem;padding:.875rem 1.125rem;background:#0A0800;border-radius:4px">
+            <p style="font-size:11px;font-weight:700;color:#D4AF6E;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.07em">Disclaimer</p>
+            <p style="font-size:11px;color:rgba(245,236,215,0.7);line-height:1.7">This report has been prepared by Astha Deep for advisory purposes based on publicly available information including MCA CSR-1 filings, MHA FCRA registry, and NGO-published annual reports. It does not constitute a legal or financial opinion. Astha Deep recommends independent verification of all financial and compliance data prior to fund disbursement.</p>
+          </div>
+        </div>
+
+      </div><!-- /reportContent -->
+    </div>
+  </div>
+</div>
+</div>
+
 <!-- CART BAR -->
 <div id="cartBar">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -551,6 +721,61 @@ function setF(type,el){
   el.classList.add('on');
   filters[type]=el.dataset.val;
   applyFilters();
+}
+
+
+// Access & verification data
+var ACCESS={
+  0:{website:'https://www.akshara.org.in',linkedin:'https://www.linkedin.com/company/akshara-foundation',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/sdetail/KA/2017/0166440/1',csrbox:'https://csrbox.org/India_organization_Karnataka-Akshara-Foundation_6143',annualReport:'https://www.akshara.org.in/annual-reports',fcraNote:'Search: Akshara Foundation, Karnataka'},
+  1:{website:'https://www.parikrmahumanity.org',linkedin:'https://www.linkedin.com/company/parikrma-humanity-foundation',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Karnataka-Parikrma-Humanity-Foundation_6892',annualReport:'https://www.parikrmahumanity.org/annual-report',fcraNote:'Search: Parikrma Humanity Foundation, Karnataka'},
+  2:{website:'https://dreamadream.org',linkedin:'https://www.linkedin.com/company/dream-a-dream',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Karnataka-Dream-A-Dream_6148',annualReport:'https://dreamadream.org/annual-report',fcraNote:'Search: Dream a Dream, Karnataka'},
+  3:{website:'https://samarthanam.org',linkedin:'https://www.linkedin.com/company/samarthanam-trust-for-the-disabled',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Karnataka-Samarthanam-Trust-For-The-Disabled_6897',annualReport:'https://samarthanam.org/annual-report',fcraNote:'Search: Samarthanam Trust, Karnataka'},
+  4:{website:'https://svym.org',linkedin:'https://www.linkedin.com/company/svym',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Karnataka-Swami-Vivekananda-Youth-Movement_6901',annualReport:'https://svym.org/annual-reports',fcraNote:'Search: Swami Vivekananda Youth Movement, Karnataka'},
+  5:{website:'https://vikasana.org',linkedin:'https://www.linkedin.com/company/vikasana',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org',annualReport:'https://vikasana.org',fcraNote:'Search: Vikasana, Karnataka'},
+  6:{website:'https://concernedforworkingchildren.org',linkedin:'https://www.linkedin.com/company/the-concerned-for-working-children',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Karnataka-The-Concerned-For-Working-Children_6906',annualReport:'https://concernedforworkingchildren.org/publications',fcraNote:'Search: Concerned for Working Children, Karnataka'},
+  7:{website:'https://graminavikas.org',linkedin:'https://www.linkedin.com/company/gramin-vikas-trust',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org',annualReport:'',fcraNote:'FCRA Under Renewal — verify at portal'},
+  8:{website:'',linkedin:'',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org',annualReport:'',fcraNote:'Search: Gram Vikas Samithi, Karnataka'},
+  9:{website:'https://www.pratham.org',linkedin:'https://www.linkedin.com/company/pratham-education-foundation',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-Pratham-Education-Foundation_21581',annualReport:'https://www.pratham.org/about/annual-reports',fcraNote:'Search: Pratham Education Foundation, Maharashtra'},
+  10:{website:'https://www.sewabharat.org',linkedin:'https://www.linkedin.com/company/sewa-bharat',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Delhi-SEWA-Bharat_13823',annualReport:'https://www.sewabharat.org/annual-report',fcraNote:'Search: SEWA Bharat, Delhi (MH operations)'},
+  11:{website:'https://www.magicbusindia.org',linkedin:'https://www.linkedin.com/company/magic-bus-india',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-Magic-Bus-India-Foundation_21576',annualReport:'https://www.magicbusindia.org/annual-reports',fcraNote:'Search: Magic Bus India Foundation, Maharashtra'},
+  12:{website:'https://www.apnalaya.org',linkedin:'https://www.linkedin.com/company/apnalaya',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-Apnalaya_21563',annualReport:'https://www.apnalaya.org/annual-reports',fcraNote:'Search: Apnalaya, Maharashtra'},
+  13:{website:'https://www.csaindia.org',linkedin:'https://www.linkedin.com/company/catalysts-for-social-action',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org',annualReport:'https://www.csaindia.org/annual-report',fcraNote:'Search: Catalysts for Social Action, Maharashtra'},
+  14:{website:'https://iteach.org.in',linkedin:'https://www.linkedin.com/company/iteach-schools',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-iTeach-Schools_21569',annualReport:'https://iteach.org.in/impact',fcraNote:'Search: iTeach Schools, Maharashtra'},
+  15:{website:'https://www.masoom.org',linkedin:'https://www.linkedin.com/company/masoom-ngo',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-Masoom_21575',annualReport:'https://www.masoom.org/annual-reports',fcraNote:'Search: Masoom, Maharashtra'},
+  16:{website:'https://www.manndeshi.org',linkedin:'https://www.linkedin.com/company/mann-deshi-foundation',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-Mann-Deshi-Foundation_21574',annualReport:'https://www.manndeshi.org/annual-report',fcraNote:'Search: Mann Deshi Foundation, Maharashtra'},
+  17:{website:'https://www.hamarafoundation.org',linkedin:'https://www.linkedin.com/company/hamara-foundation',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org',annualReport:'',fcraNote:'Search: Hamara Foundation, Maharashtra'},
+  18:{website:'https://www.ummeed.org',linkedin:'https://www.linkedin.com/company/ummeed-child-development-center',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-Ummeed-Child-Development-Center_21585',annualReport:'https://www.ummeed.org/about-us/annual-reports',fcraNote:'Search: Ummeed Child Development Center, Maharashtra'},
+  19:{website:'https://www.teachforindia.org',linkedin:'https://www.linkedin.com/company/teach-for-india',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Maharashtra-Teach-For-India_21582',annualReport:'https://www.teachforindia.org/annual-report',fcraNote:'Search: Teach For India, Maharashtra'},
+  20:{website:'https://nudgefoundation.in',linkedin:'https://www.linkedin.com/company/nudge-foundation',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org/India_organization_Karnataka-Nudge-Foundation_6888',annualReport:'https://nudgefoundation.in/annual-report',fcraNote:'Search: Nudge Foundation, Karnataka'},
+  21:{website:'https://www.yuwaindia.org',linkedin:'https://www.linkedin.com/company/yuwa-india',fcraSearch:'https://fcraonline.nic.in/fc3_regdet.aspx',ngoDarpan:'https://ngodarpan.gov.in/index.php/home/search',csrbox:'https://csrbox.org',annualReport:'https://www.yuwaindia.org/impact',fcraNote:'Search: Yuwa India, Maharashtra'},
+};
+
+function toggleAccess(e,id){
+  e.stopPropagation();
+  var p=document.getElementById('ap_'+id);
+  p.classList.toggle('open');
+  var btn=p.previousElementSibling;
+  var isOpen=p.classList.contains('open');
+  btn.classList.toggle('open',isOpen);
+  btn.innerHTML=isOpen
+    ?'<span style="font-size:13px">&#128279;</span> Hide Verification Links <span style="font-size:10px">&#9650;</span>'
+    :'<span style="font-size:13px">&#128279;</span> Search &amp; Verify Documents <span style="font-size:10px">&#9660;</span>';
+}
+
+function buildAccessLinks(id){
+  var a=ACCESS[id];
+  if(!a)return '';
+  var links='<p style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B4F2A;margin-bottom:7px">&#10003; Public verification sources</p><div class="access-links">';
+  if(a.website)links+='<a class="alink" href="'+a.website+'" target="_blank" rel="noopener"><span class="alink-icon">W</span>Official Website</a>';
+  links+='<a class="alink" href="'+a.fcraSearch+'" target="_blank" rel="noopener"><span class="alink-icon">FC</span>FCRA Registry (MHA)</a>';
+  links+='<a class="alink" href="https://ngodarpan.gov.in/index.php/home/search" target="_blank" rel="noopener"><span class="alink-icon">ND</span>NGO Darpan Portal</a>';
+  links+='<a class="alink" href="https://www.mca.gov.in/content/mca/global/en/mca/fo-llp/LLP-Forms-Download/CSR-1-Form.html" target="_blank" rel="noopener"><span class="alink-icon">MC</span>MCA CSR-1 Filing</a>';
+  if(a.csrbox&&a.csrbox!=='https://csrbox.org')links+='<a class="alink" href="'+a.csrbox+'" target="_blank" rel="noopener"><span class="alink-icon">CB</span>CSRBox Profile</a>';
+  if(a.linkedin)links+='<a class="alink" href="'+a.linkedin+'" target="_blank" rel="noopener"><span class="alink-icon">Li</span>LinkedIn Page</a>';
+  if(a.annualReport)links+='<a class="alink" href="'+a.annualReport+'" target="_blank" rel="noopener"><span class="alink-icon">AR</span>Annual Report</a>';
+  links+='</div>';
+  if(a.fcraNote)links+='<div class="fcra-note">FCRA search tip: '+a.fcraNote+'</div>';
+  return links;
 }
 
 function applyFilters(){
@@ -888,6 +1113,296 @@ function buildInd(tab){
 
 // INIT
 applyFilters();
+
+// ── REPORT ──
+var rChartInst = null;
+
+function buildReport(){
+  if(!cart.length){
+    document.getElementById('reportEmpty').style.display='block';
+    document.getElementById('reportContent').style.display='none';
+    return;
+  }
+  document.getElementById('reportEmpty').style.display='none';
+  document.getElementById('reportContent').style.display='block';
+
+  var ngos = NGOS.filter(function(n){return cart.indexOf(n.id)>-1;}).sort(function(a,b){return wScore(b)-wScore(a);});
+  var sel=[],cond=[],notR=[];
+  ngos.forEach(function(n){
+    var ws=wScore(n); var hh=n.flags.some(function(f){return f.sev==='H';});
+    if(hh)notR.push(n); else if(ws>=8.0)sel.push(n); else if(ws>=7.0)cond.push(n); else notR.push(n);
+  });
+
+  // Subtitle
+  var states=[...new Set(ngos.map(function(n){return n.state==='both'?'KA, MH':n.state;}))].join(' & ');
+  document.getElementById('rSubtitle').textContent = 'Infosys Foundation · ₹8 Cr CSR Portfolio · '+states+' · FY 2025–26';
+
+  // Metrics
+  var rm = document.getElementById('rMetrics'); rm.innerHTML='';
+  var mets=[
+    {v:ngos.length,l:'NGOs Evaluated'},
+    {v:sel.length,l:'Recommended'},
+    {v:cond.length,l:'Conditional'},
+    {v:notR.length,l:'Not Recommended'}
+  ];
+  mets.forEach(function(m){rm.innerHTML+='<div class="rmet"><div class="rmet-v">'+m.v+'</div><div class="rmet-l">'+m.l+'</div></div>';});
+
+  // Executive summary
+  var topNgo = sel.length ? sel[0] : ngos[0];
+  var summary = 'Astha Deep evaluated '+ngos.length+' NGO implementation partners across '
+    +[...new Set(ngos.map(function(n){return n.tl;}))].join(' and ')+' themes '
+    +'for Infosys Foundation’s ₹8 Cr CSR portfolio in Karnataka and Maharashtra (FY 2025–26). '
+    +'Of the '+ngos.length+' organisations assessed, '+sel.length+' are recommended for direct allocation, '
+    +cond.length+' are recommended with conditions, and '+notR.length+' are excluded on compliance grounds. '
+    +(topNgo ? topNgo.name+' leads the evaluation with a weighted score of '+wScore(topNgo).toFixed(2)+'/10.' : '')
+    +' All scores are derived from a six-dimension framework: Governance & Compliance, Programme Quality, '
+    +'Financial Health, M&E Capacity, Mission Alignment, and Partnership Readiness.';
+  document.getElementById('rExecSummary').textContent = summary;
+
+  // Report map
+  buildReportMap(ngos);
+
+
+  // Portfolio cards
+  var pc = document.getElementById('rPortfolioCards'); pc.innerHTML='';
+  ngos.forEach(function(n){
+    var ws=wScore(n); var hh=n.flags.some(function(f){return f.sev==='H';});
+    var isSel=sel.indexOf(n)>-1; var isCond=cond.indexOf(n)>-1;
+    var badge=hh?'<span class="fl fH">Not recommended</span>':isSel?'<span class="fl fOK">Selected</span>':'<span class="fl fM">Conditional</span>';
+    var div=document.createElement('div');
+    div.className='rngo-card'+(isSel?' selected':'');
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+      +'<div><p style="font-size:13px;font-weight:700;margin:0 0 3px">'+n.name+'</p>'
+      +'<p style="font-size:10px;margin:0">'+n.hq+' · est. '+n.est+' · '+n.budget+'</p></div>'
+      +'<div style="text-align:right"><div style="font-size:18px;font-weight:700;font-family:monospace">'+ws.toFixed(2)+'</div>'
+      +'<div style="font-size:9px">/10.00</div></div></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px"><span class="ptag '+n.theme+'">'+n.tl+'</span>'+badge+'</div>'
+      +'<p style="font-size:11px;line-height:1.4">'+n.prog+'</p>'
+      +'<div style="display:flex;justify-content:space-between;font-size:10px;margin-top:8px;padding-top:6px;border-top:1px solid rgba(10,8,0,0.15)">'
+      +'<span>Util: '+n.util+'%</span><span>Admin: '+n.admin+'%</span>'
+      +'<span>FCRA: '+n.fcra+'</span><span>'+n.bene+'</span></div>';
+    pc.appendChild(div);
+  });
+
+  // Scoring matrix
+  var sm = document.getElementById('rScoringMatrix');
+  var cols = '130px repeat('+ngos.length+',1fr)';
+  var mhtml='<div style="display:grid;grid-template-columns:'+cols+';gap:0">';
+  mhtml+='<div style="font-size:10px;font-weight:700;color:#6B4F2A;padding:4px 0">Dimension</div>';
+  ngos.forEach(function(ng){mhtml+='<div style="font-size:10px;font-weight:700;color:#3A3200;padding:4px;text-align:center;border-left:1px solid rgba(10,8,0,0.12);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+ng.short+'</div>';});
+  DIMS.forEach(function(d,di){
+    mhtml+='<div style="font-size:11px;color:#3A3200;padding:5px 0;border-top:1px solid rgba(10,8,0,0.1)">'+d+'</div>';
+    ngos.forEach(function(ng){
+      var sc=ng.scores[di]; var bg=sc>=8?'background:#1A3D00;color:#d4f5b0':sc>=7?'background:#5C3800;color:#F5ECD7':'background:#7A0000;color:#F5ECD7';
+      mhtml+='<div style="text-align:center;padding:5px 3px;font-size:11px;font-weight:700;border-left:1px solid rgba(10,8,0,0.1);border-top:1px solid rgba(10,8,0,0.1);border-radius:2px;margin:1px;'+bg+'">'+sc.toFixed(1)+'</div>';
+    });
+  });
+  mhtml+='<div style="font-size:11px;font-weight:700;padding:6px 0;border-top:2px solid #0A0800">Weighted Total</div>';
+  ngos.forEach(function(ng){
+    var ws=wScore(ng); var bg=ws>=8?'background:#1A3D00;color:#d4f5b0':ws>=7?'background:#5C3800;color:#F5ECD7':'background:#7A0000;color:#F5ECD7';
+    mhtml+='<div style="text-align:center;padding:6px 3px;font-size:11px;font-weight:700;font-family:monospace;border-left:1.5px solid #0A0800;border-top:2px solid #0A0800;'+bg+'">'+ws.toFixed(2)+'</div>';
+  });
+  mhtml+='</div>';
+  sm.innerHTML=mhtml;
+
+  // Report chart
+  if(rChartInst){rChartInst.destroy();rChartInst=null;}
+  var ctx=document.getElementById('rChart');
+  if(ctx){
+    rChartInst=new Chart(ctx,{type:'bar',data:{labels:ngos.map(function(n){return n.short;}),datasets:[{label:'Weighted score',data:ngos.map(function(n){return +wScore(n).toFixed(2);}),backgroundColor:ngos.map(function(n){return n.color+'BB';}),borderColor:ngos.map(function(n){return n.color;}),borderWidth:1.5,borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:0,max:10,ticks:{font:{size:10}},grid:{color:'rgba(10,8,0,0.07)'}},y:{ticks:{font:{size:10}}}}}});
+  }
+
+  // Financial
+  var fc=document.getElementById('rFinContent'); fc.innerHTML='';
+  var fhtml='<div style="overflow-x:auto"><table><thead><tr>';
+  ['Organisation','FCRA','Utilization','Admin Overhead','FY24 Audit','CSR-1','Red Flags'].forEach(function(h){fhtml+='<th>'+h+'</th>';});
+  fhtml+='</tr></thead><tbody>';
+  ngos.forEach(function(n){
+    fhtml+='<tr><td style="font-weight:700;white-space:nowrap">'+n.name+'</td>'
+      +'<td><span class="fl '+(n.fcra==='Active'?'fOK':'fH')+'">'+n.fcra+'</span></td>'
+      +'<td><span class="fl '+(n.util>=90?'fOK':n.util>=80?'fM':'fH')+'">'+n.util+'%</span></td>'
+      +'<td><span class="fl '+(n.admin<=12?'fOK':n.admin<=18?'fM':'fH')+'">'+n.admin+'%</span></td>'
+      +'<td><span class="fl '+(n.audit.includes('Clean')?'fOK':n.audit.includes('not filed')?'fH':'fM')+'">'+n.audit+'</span></td>'
+      +'<td><span class="fl '+(n.csr1==='Filed'?'fOK':'fH')+'">'+n.csr1+'</span></td>'
+      +'<td>'+(n.flags.length===0?'<span class="fl fOK">None</span>':n.flags.map(function(f){return '<span class="fl f'+f.sev+'">'+(f.sev==='H'?'High':'Med')+'</span>';}).join(''))+'</td></tr>';
+  });
+  fhtml+='</tbody></table></div>';
+  fc.innerHTML=fhtml;
+
+  // Recommendations
+  var rc=document.getElementById('rRecContent'); rc.innerHTML='';
+  ngos.forEach(function(n){
+    var ws=wScore(n); var hh=n.flags.some(function(f){return f.sev==='H';});
+    var isSel=sel.indexOf(n)>-1; var isCond=cond.indexOf(n)>-1;
+    var badge=hh?'<span class="fl fH">Not recommended</span>':isSel?'<span class="fl fOK">Selected</span>':'<span class="fl fM">Conditional</span>';
+    var rat=hh?'Excluded — '+n.flags.filter(function(f){return f.sev==='H';}).map(function(f){return f.text;}).join('; ')
+      :ws>=9?'Exceptional scores across all dimensions. Recommended as anchor implementation partner.'
+      :ws>=8?'Strong governance, programme quality and compliance. Recommended for primary allocation.'
+      :ws>=7?'Adequate programme quality with minor compliance gaps. Conditional allocation subject to MOU.'
+      :'Score below 7.0 threshold. Excluded from this portfolio cycle.';
+    rc.innerHTML+='<div class="rcond"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:700">'+n.name+'</span>'+badge+'</div>'
+      +'<span style="font-size:16px;font-weight:700;font-family:monospace;color:'+(ws>=8?'#1A3D00':ws>=7?'#5C3800':'#7A0000')+'">'+ws.toFixed(2)+'</span></div>'
+      +'<p style="font-size:12px;color:#2C1F0E;line-height:1.6">'+rat+'</p></div>';
+  });
+
+  // Allocation
+  var allRec=sel.concat(cond);
+  var ac=document.getElementById('rAllocContent');
+  if(!allRec.length){ac.innerHTML='<p style="font-size:13px;color:#6B4F2A">No partners meet threshold.</p>';return;}
+  var ahtml='<table><thead><tr>';
+  ['Partner','Allocation','Theme','Status','Condition'].forEach(function(h){ahtml+='<th>'+h+'</th>';});
+  ahtml+='</tr></thead><tbody>';
+  allRec.forEach(function(n){
+    var isC=cond.indexOf(n)>-1;
+    var share=isC?0.5:Math.max(0.5,(8*(1-0.5*cond.length/allRec.length)/Math.max(sel.length,1)));
+    ahtml+='<tr><td style="font-weight:700">'+n.name+'</td>'
+      +'<td style="font-weight:700;font-family:monospace;color:#1A3D00">₹'+share.toFixed(1)+' Cr</td>'
+      +'<td><span class="ptag '+n.theme+'">'+n.tl+'</span></td>'
+      +'<td><span class="fl '+(isC?'fM':'fOK')+'">'+(isC?'Conditional':'Locked')+'</span></td>'
+      +'<td style="font-size:11px;color:#2C1F0E">'+(isC?'Pending audit and MOU compliance review':'Ready for agreement signing')+'</td></tr>';
+  });
+  ahtml+='</tbody></table>';
+  ac.innerHTML=ahtml;
+
+  // Conditions & flags
+  var conds=ngos.filter(function(n){return n.flags.length>0;});
+  var cd=document.getElementById('rConditions'); cd.innerHTML='';
+  if(!conds.length){
+    cd.innerHTML='<div style="padding:1rem;background:#F5ECD7;border-radius:4px;border:1px solid rgba(10,8,0,0.15);font-size:13px;color:#2C1F0E"><strong>&#10003; No red flags identified</strong> across the selected partner set. All organisations cleared compliance review.</div>';
+  } else {
+    conds.forEach(function(n){
+      var fhtml='<div class="rcond"><p style="font-size:12px;font-weight:700;margin-bottom:7px">'+n.name+'</p>';
+      n.flags.forEach(function(f){fhtml+='<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px"><span class="fl f'+f.sev+'" style="flex-shrink:0">'+(f.sev==='H'?'High':'Medium')+'</span><span style="font-size:12px;color:#2C1F0E">'+f.text+'</span></div>';});
+      fhtml+='</div>';
+      cd.innerHTML+=fhtml;
+    });
+  }
+
+  // Next steps
+  var steps=[
+    {n:'1',t:'MOU Drafting','b':'Initiate MOU drafting with recommended partners. Include M&E milestones, fund utilization targets, and audit submission timelines.'},
+    {n:'2',t:'Baseline Study','b':'Commission independent baseline assessment aligned to selected NGO theories of change before funds disbursement.'},
+    {n:'3',t:'Audit Verification','b':'Obtain FY24 audited statements from conditional partners before releasing tranches. Non-submission triggers automatic hold.'},
+    {n:'4',t:'Quarterly Reporting','b':'Establish mandatory quarterly M&E reporting with Astha Deep template. First report due 90 days post-disbursement.'},
+    {n:'5',t:'Mid-term Review','b':'Schedule mid-term field review at 6 months. Astha Deep to conduct KII with programme staff and beneficiaries.'},
+    {n:'6',t:'Annual Audit','b':'CSR-1 filing and programme impact report due by September 30 of the following financial year.'}
+  ];
+  var ns=document.getElementById('rNextSteps'); ns.innerHTML='';
+  steps.forEach(function(s){
+    ns.innerHTML+='<div class="rstep"><div style="display:flex;align-items:flex-start;gap:8px"><span class="rstep-num">'+s.n+'</span><div><p style="font-size:12px;font-weight:700;margin-bottom:3px">'+s.t+'</p><p style="font-size:11px;color:#6B4F2A;line-height:1.5">'+s.b+'</p></div></div></div>';
+  });
+}
+
+
+function buildReportMap(ngos){
+  var svg = d3.select('#rMapSvg');
+  svg.selectAll('*').remove();
+  var w=580, h=560;
+  var proj = d3.geoMercator().center([79,18]).scale(1050).translate([w/2, h/2+40]);
+  var path = d3.geoPath().projection(proj);
+  var TC={edu:'#378ADD',live:'#1D9E75',mix:'#534AB7'};
+
+  d3.json('https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/ind.topo.json').then(function(india){
+    var key=Object.keys(india.objects)[0];
+    var features=topojson.feature(india,india.objects[key]).features;
+
+    // Draw all states
+    svg.selectAll('path.rs').data(features).join('path').attr('class','rs')
+      .attr('d',path)
+      .attr('fill',function(d){
+        var n=(d.properties.NAME_1||d.properties.name||d.properties.st_nm||'').toLowerCase();
+        if(n.includes('karnataka'))return '#D4AF6E';
+        if(n.includes('maharashtra'))return '#C8A96E';
+        return '#E8DFC8';
+      })
+      .attr('stroke','rgba(10,8,0,0.18)').attr('stroke-width',0.5);
+
+    // State labels
+    features.forEach(function(d){
+      var n=(d.properties.NAME_1||d.properties.name||d.properties.st_nm||'');
+      if(n.toLowerCase().includes('karnataka')||n.toLowerCase().includes('maharashtra')){
+        var c=path.centroid(d);
+        if(!isNaN(c[0])){
+          svg.append('text').attr('x',c[0]).attr('y',c[1])
+            .attr('text-anchor','middle').attr('font-size','10')
+            .attr('font-weight','700').attr('font-family','sans-serif')
+            .attr('fill','rgba(10,8,0,0.6)').attr('pointer-events','none')
+            .text(n.toLowerCase().includes('karnataka')?'Karnataka':'Maharashtra');
+        }
+      }
+    });
+
+    // NGO dots
+    var maxB=Math.max.apply(null,ngos.map(function(n){return n.beneN;}));
+    var tip=document.getElementById('mapTip');
+
+    ngos.forEach(function(n){
+      var xy=proj([n.lon,n.lat]);
+      if(isNaN(xy[0]))return;
+      var r=Math.max(7,Math.min(22,7+15*(Math.log(n.beneN+1)/Math.log(maxB+1))));
+      var col=TC[n.theme];
+
+      // Outer ring
+      svg.append('circle').attr('cx',xy[0]).attr('cy',xy[1]).attr('r',r+2)
+        .attr('fill','none').attr('stroke','#0A0800').attr('stroke-width',1.5);
+
+      // Filled dot
+      svg.append('circle').attr('cx',xy[0]).attr('cy',xy[1]).attr('r',r)
+        .attr('fill',col+'CC').attr('stroke',col).attr('stroke-width',1.5)
+        .attr('cursor','pointer')
+        .on('mousemove',function(event){
+          tip.style.display='block';
+          tip.style.left=(event.clientX+12)+'px';
+          tip.style.top=(event.clientY-40)+'px';
+          tip.innerHTML='<strong>'+n.name+'</strong><br>'
+            +'<span style="font-size:11px;color:rgba(245,236,215,0.7)">'+n.hq+' · '+n.tl+'</span><br>'
+            +'<span style="font-size:11px">'+n.bene+'</span>';
+        })
+        .on('mouseleave',function(){tip.style.display='none';});
+
+      // Label for larger dots
+      if(r>=12){
+        svg.append('text').attr('x',xy[0]).attr('y',xy[1]+0.5)
+          .attr('text-anchor','middle').attr('dominant-baseline','middle')
+          .attr('font-size','8').attr('font-weight','700')
+          .attr('font-family','sans-serif').attr('fill','#fff')
+          .attr('pointer-events','none')
+          .text(n.short.slice(0,3).toUpperCase());
+      }
+    });
+
+  }).catch(function(){
+    svg.append('text').attr('x',290).attr('y',280)
+      .attr('text-anchor','middle').attr('font-size','12')
+      .attr('font-family','sans-serif').attr('fill','#6B4F2A')
+      .text('Map requires internet connection to load');
+  });
+
+  // Sidebar list
+  var ml=document.getElementById('rMapList'); ml.innerHTML='';
+  ngos.forEach(function(n){
+    var ws=wScore(n).toFixed(1); var wsf=parseFloat(ws);
+    ml.innerHTML+='<div style="background:#F5ECD7;border:1px solid rgba(10,8,0,0.18);border-radius:3px;padding:.5rem .75rem">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">'
+      +'<div style="width:8px;height:8px;border-radius:50%;background:'+TC[n.theme]+';flex-shrink:0;border:1px solid #0A0800"></div>'
+      +'<span style="font-size:11px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+n.name+'</span>'
+      +'<span style="font-size:11px;font-family:monospace;font-weight:700;color:'+(wsf>=8?'#1A3D00':wsf>=7?'#5C3800':'#7A0000')+'">'+ws+'</span></div>'
+      +'<div style="font-size:10px;color:#6B4F2A">'+n.hq+' · '+n.bene+'</div></div>';
+  });
+}
+
+function exportPDF(){
+  window.print();
+}
+
+// Override showView to trigger report build
+var _origShowView = showView;
+showView = function(v, el){
+  _origShowView(v, el);
+  if(v==='report') buildReport();
+};
+
 </script>
 </body>
 </html>

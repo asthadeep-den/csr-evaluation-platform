@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CSR Impact Evaluation Platform — Astha Deep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Vintage yellow palette */
+  --bg:#FDF6C3;
+  --bg2:#F5E64A;
+  --bg3:#EDD832;
+  --text:#0A0800;
+  --text2:#3A3200;
+  --text3:#6B5C00;
+  --border:rgba(10,8,0,0.22);
+  --border2:rgba(10,8,0,0.45);
+  --accent:#0A0800;
+  --accent-bg:#F5E64A;
+  --accent-dark:#0A0800;
+  /* Flags - dark chips on yellow */
+  --red-bg:#7A0000;   --red-t:#FDF6C3;
+  --amber-bg:#5C3800; --amber-t:#FDF6C3;
+  --green-bg:#1A3D00; --green-t:#FDF6C3;
+  --blue-bg:#0A0800;  --blue-t:#F5E64A;
+  --purple-bg:#2D0050;--purple-t:#FDF6C3;
+  --gray-bg:#3A3200;  --gray-t:#FDF6C3;
+  --r:4px;--rs:2px;
+}
+html,body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:var(--bg3);
+  color:var(--text);
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+}
+
+/* ── TOP NAV ── */
+.topnav{
+  position:sticky;top:0;z-index:200;
+  background:var(--text);
+  border-bottom:2px solid var(--text);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.5rem;gap:1rem;
+}
+.tnbrand-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--bg2);margin-bottom:3px}
+.tnbrand-name{font-size:15px;font-weight:700;color:#FDF6C3;font-family:'Playfair Display',Georgia,serif;letter-spacing:.01em}
+.tntabs{display:flex;gap:3px;background:rgba(255,255,255,0.08);padding:3px;border-radius:2px}
+.tntab{
+  font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;
+  padding:5px 14px;border-radius:1px;border:none;
+  background:transparent;color:rgba(253,246,195,0.55);
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.tntab.on{background:var(--bg2);color:var(--text)}
+.tntab:hover:not(.on){color:#FDF6C3}
+.tncart{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(253,246,195,0.6)}
+.cart-count-badge{background:var(--bg2);color:var(--text);font-size:11px;font-weight:700;padding:2px 9px;border-radius:1px;min-width:24px;text-align:center}
+
+/* ── PAGE ── */
+.page{max-width:1000px;margin:0 auto;padding:1.25rem 1.25rem 6rem}
+.view{display:none}.view.on{display:block}
+
+/* ── FILTER BAR ── */
+.filterbar{
+  background:var(--bg);border:1.5px solid var(--text);
+  border-radius:var(--r);padding:.875rem 1.25rem;
+  margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.filterbar input[type=text]{
+  flex:1;min-width:160px;font-family:inherit;font-size:13px;font-weight:500;
+  padding:6px 12px;border:1.5px solid var(--text);border-radius:var(--rs);
+  background:var(--bg);color:var(--text);outline:none;
+}
+.filterbar input::placeholder{color:var(--text3)}
+.filterbar input:focus{background:var(--bg2)}
+.filter-group{display:flex;gap:4px;flex-wrap:wrap}
+.fchip{
+  font-size:11px;font-weight:700;letter-spacing:.03em;
+  padding:4px 11px;border-radius:1px;
+  border:1.5px solid var(--text);background:var(--bg);
+  color:var(--text);cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.fchip:hover{background:var(--bg2)}
+.fchip.on{background:var(--text);color:var(--bg2)}
+
+/* ── NGO GRID ── */
+.ngo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:720px){.ngo-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.ngo-grid{grid-template-columns:1fr}}
+.ngocard{
+  background:var(--bg);border:1.5px solid var(--text);
+  border-radius:var(--r);padding:.875rem 1rem;
+  display:flex;flex-direction:column;gap:7px;
+  transition:background .15s;
+}
+.ngocard:hover{background:var(--bg2)}
+.ngocard.incart{background:var(--text);border-color:var(--text)}
+.ngocard.incart .card-name{color:#FDF6C3}
+.ngocard.incart .card-loc{color:rgba(253,246,195,0.6)}
+.ngocard.incart .card-stats span{color:rgba(253,246,195,0.7)}
+.ngocard.incart .cart-btn{background:var(--bg2);color:var(--text);border-color:var(--bg2)}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:1.5px solid currentColor}
+.card-meta{flex:1;min-width:0}
+.card-name{font-size:13px;font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-loc{font-size:11px;color:var(--text2);margin-top:1px}
+.card-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;font-size:11px;color:var(--text2)}
+.score-row{display:flex;align-items:center;gap:8px}
+.sbar{flex:1;height:4px;border-radius:0;background:rgba(10,8,0,0.15);overflow:hidden}
+.sbf{height:100%;border-radius:0}
+.score-num{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;min-width:30px;text-align:right}
+.cart-btn{
+  font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.03em;
+  padding:5px 10px;border-radius:var(--rs);
+  border:1.5px solid var(--text);background:var(--bg2);
+  color:var(--text);cursor:pointer;transition:all .15s;width:100%;
+}
+.cart-btn:hover{background:var(--text);color:var(--bg2)}
+.empty-state{grid-column:1/-1;text-align:center;padding:3rem;color:var(--text3);font-size:14px}
+
+/* ── TAGS ── */
+.ptag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:1px;display:inline-block;white-space:nowrap;flex-shrink:0;letter-spacing:.03em}
+.edu{background:var(--text);color:var(--bg2)}
+.live{background:var(--green-bg);color:var(--green-t)}
+.mix{background:var(--purple-bg);color:var(--purple-t)}
+.geo{background:rgba(10,8,0,0.10);color:var(--text);border:1px solid var(--border)}
+
+/* ── FLAGS ── */
+.fl{font-size:10px;font-weight:700;padding:2px 8px;border-radius:1px;display:inline-block;margin:1px;letter-spacing:.02em}
+.fH{background:var(--red-bg);color:var(--red-t)}
+.fM{background:var(--amber-bg);color:var(--amber-t)}
+.fOK{background:var(--green-bg);color:var(--green-t)}
+
+/* ── CART BAR ── */
+#cartBar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--text);border-top:2px solid var(--text);
+  padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  transform:translateY(100%);transition:transform .25s;z-index:100;
+}
+#cartBar.visible{transform:translateY(0)}
+.cart-summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cart-names{font-size:12px;color:rgba(253,246,195,0.65);max-width:500px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-actions{display:flex;gap:8px;flex-shrink:0}
+button.primary{
+  font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.03em;
+  padding:7px 18px;border-radius:var(--rs);border:2px solid var(--bg2);
+  background:var(--bg2);color:var(--text);cursor:pointer;transition:all .15s;
+}
+button.primary:hover{background:transparent;color:var(--bg2)}
+button.secondary{
+  font-family:inherit;font-size:13px;font-weight:700;
+  padding:7px 14px;border-radius:var(--rs);
+  border:2px solid var(--bg2);background:transparent;
+  color:var(--bg2);cursor:pointer;transition:all .15s;
+}
+button.secondary:hover{background:var(--bg2);color:var(--text)}
+button:disabled{opacity:.35;cursor:default}
+
+/* ── EVAL SHELL ── */
+.eval-shell{background:var(--bg);border:1.5px solid var(--text);border-radius:var(--r);overflow:hidden}
+.eval-header{padding:1.25rem 1.5rem 1rem;border-bottom:1.5px solid var(--text);display:flex;justify-content:space-between;align-items:flex-end;background:var(--text)}
+.eval-header > div:first-child > div:first-child{color:var(--bg2)}
+.eval-header > div:first-child > div:nth-child(2){color:#FDF6C3;font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700}
+.eval-header > div:first-child > div:nth-child(3){color:rgba(253,246,195,0.65);font-size:12px}
+.eval-header > div:last-child{color:rgba(253,246,195,0.65);text-align:right;font-size:11px;line-height:1.9}
+#evalNgoCount{color:#FDF6C3;font-size:15px;font-weight:700}
+.eval-body{padding:1.5rem}
+.sp{display:none}.sp.on{display:block}
+
+/* PROGRESS */
+#prog{display:flex;align-items:flex-start;margin-bottom:1.75rem}
+.pgstep{display:flex;flex-direction:column;align-items:center;min-width:36px}
+.pgdot{width:26px;height:26px;border-radius:50%;border:2px solid var(--text);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text);flex-shrink:0;transition:all .25s;background:var(--bg)}
+.pgdot.on{background:var(--text);color:var(--bg2)}
+.pgdot.done{background:var(--text);color:var(--bg2)}
+.pglbl{font-size:10px;font-weight:500;color:var(--text3);text-align:center;margin-top:3px;white-space:nowrap}
+.pglbl.on{color:var(--text);font-weight:700}
+.pgline{flex:1;height:1.5px;background:var(--text);margin:0 4px;margin-bottom:14px;opacity:.25}
+
+/* EVAL CARDS */
+.met-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.met{background:var(--text);border-radius:var(--rs);padding:.75rem 1rem;text-align:center}
+.met-val{font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--bg2)}
+.met-lbl{font-size:11px;color:rgba(253,246,195,0.65);margin-top:2px;font-weight:500}
+.card{background:var(--bg);border:1.5px solid var(--text);border-radius:var(--r);padding:.875rem 1.125rem}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.three-col{display:grid;grid-template-columns:190px 1fr;gap:1.5rem;align-items:start}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.wrow{display:grid;grid-template-columns:1fr 36px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.wrow:last-child{border-bottom:none}
+input[type=range]{width:100%;accent-color:var(--text);cursor:pointer}
+
+/* SCORE MATRIX */
+.sgrid{display:grid}
+.shd{font-size:11px;font-weight:700;color:var(--text2);padding:5px 4px;text-align:center;border-left:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sdim{font-size:11px;font-weight:500;color:var(--text2);padding:6px 0;border-top:1px solid var(--border)}
+.scel{text-align:center;padding:5px 3px;font-size:12px;font-weight:700;border-left:1px solid var(--border);border-top:1px solid var(--border);border-radius:2px;margin:1px}
+.stot{text-align:center;padding:6px 4px;font-size:12px;font-weight:700;border-left:1.5px solid var(--text);border-top:2px solid var(--text);font-family:'DM Mono',monospace}
+.scH{background:var(--green-bg);color:var(--green-t)}
+.scM{background:var(--amber-bg);color:var(--amber-t)}
+.scL{background:var(--red-bg);color:var(--red-t)}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:7px 8px;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text);border-bottom:2px solid var(--text);white-space:nowrap;text-transform:uppercase;background:var(--bg2)}
+td{padding:6px 8px;color:var(--text);border-bottom:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(245,230,74,0.15)}
+
+/* REC CARDS */
+.rec-card{border-radius:var(--r);border:1.5px solid var(--text);background:var(--bg);padding:.875rem 1.125rem;margin-bottom:10px}
+.rec-card.sel-card{background:var(--text);border-color:var(--text)}
+.rec-card.sel-card p,.rec-card.sel-card div{color:#FDF6C3 !important}
+.rec-card.sel-card .ptag.edu{background:var(--bg2);color:var(--text)}
+.rec-card.sel-card .fl.fOK{background:var(--bg2);color:var(--text)}
+.rec-card.notrec{opacity:.55}
+.nav-bar{display:flex;justify-content:space-between;align-items:center;margin-top:1.75rem;padding-top:1rem;border-top:1.5px solid var(--border)}
+
+/* ── IMPACT SHELL ── */
+.impact-shell{background:var(--bg);border:1.5px solid var(--text);border-radius:var(--r);overflow:hidden}
+.impact-subnav{display:flex;gap:0;border-bottom:1.5px solid var(--text);overflow-x:auto;background:var(--bg2)}
+.sntab{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;padding:.875rem 1.25rem;border:none;background:none;color:var(--text2);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s;text-transform:uppercase}
+.sntab.on{color:var(--text);border-bottom-color:var(--text);background:var(--bg)}
+.sntab:hover:not(.on){background:rgba(10,8,0,0.08)}
+.impact-panel{display:none;padding:1.5rem}
+.impact-panel.on{display:block}
+.impact-intro{font-size:13px;color:var(--text2);margin-bottom:1.25rem;line-height:1.7}
+
+/* MAP */
+#mapWrap{position:relative;border-radius:var(--rs);overflow:hidden;background:var(--bg2);border:1.5px solid var(--text)}
+#mapSvg{width:100%;display:block}
+.map-legend{display:flex;gap:16px;margin-top:.75rem;flex-wrap:wrap}
+.map-leg-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--text2)}
+.map-leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--text)}
+.map-tooltip{position:fixed;background:var(--text);border:1.5px solid var(--text);border-radius:var(--rs);padding:8px 12px;font-size:12px;pointer-events:none;display:none;z-index:500;color:#FDF6C3}
+.map-layout{display:grid;grid-template-columns:1fr 240px;gap:1rem;align-items:start}
+.map-sidebar{display:flex;flex-direction:column;gap:6px;max-height:520px;overflow-y:auto}
+.map-ngo-item{background:var(--bg2);border-radius:var(--rs);padding:.625rem .875rem;border:1px solid var(--border);cursor:default}
+.map-filter{display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap}
+
+/* SDG MATRIX */
+.sdg-wrap{overflow-x:auto}
+.sdg-table{border-collapse:collapse;font-size:12px;min-width:100%}
+.sdg-table th{padding:6px 8px;font-size:10px;font-weight:700;color:var(--text);border-bottom:2px solid var(--text);white-space:nowrap;text-align:center;background:var(--bg2);text-transform:uppercase;letter-spacing:.04em}
+.sdg-table th:first-child{text-align:left;min-width:200px}
+.sdg-table td{padding:7px;text-align:center;border-top:1px solid var(--border)}
+.sdg-table td:first-child{text-align:left;font-size:11px;font-weight:600;color:var(--text)}
+.sdg-badge{width:28px;height:28px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:1px solid rgba(0,0,0,0.2)}
+.sdg-dot-p{width:12px;height:12px;border-radius:50%;display:inline-block;border:1.5px solid rgba(0,0,0,0.2)}
+.sdg-dot-s{width:8px;height:8px;border-radius:50%;display:inline-block;opacity:.45;border:1px solid rgba(0,0,0,0.15)}
+.sdg-legend{display:flex;gap:16px;margin-top:.75rem;font-size:11px;color:var(--text2);flex-wrap:wrap;font-weight:500}
+.sdg-leg{display:flex;align-items:center;gap:5px}
+
+/* THEORY OF CHANGE */
+.toc-selector{display:flex;gap:8px;margin-bottom:1.25rem}
+.toc-btn{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:6px 18px;border-radius:1px;border:2px solid var(--text);background:var(--bg);color:var(--text);cursor:pointer;transition:all .15s}
+.toc-btn.on{background:var(--text);color:var(--bg2)}
+.toc-btn:hover:not(.on){background:var(--bg2)}
+
+/* INDICATORS */
+.ind-tabs{display:flex;gap:6px;margin-bottom:1rem}
+.ind-tab{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:5px 16px;border-radius:1px;border:2px solid var(--text);background:var(--bg);color:var(--text);cursor:pointer;transition:all .15s}
+.ind-tab.on{background:var(--text);color:var(--bg2)}
+.ind-tab:hover:not(.on){background:var(--bg2)}
+.ind-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ind-card{background:var(--bg);border:1.5px solid var(--text);border-radius:var(--r);padding:1rem 1.125rem}
+.ind-title{font-size:13px;font-weight:700;margin-bottom:.25rem}
+.ind-meta{font-size:11px;color:var(--text2);margin-bottom:.75rem;font-weight:500}
+.ind-bar-wrap{margin-bottom:6px}
+.ind-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px;font-weight:500}
+.ind-bar-track{height:7px;border-radius:0;background:rgba(10,8,0,0.12);overflow:hidden;border:1px solid rgba(10,8,0,0.15)}
+.ind-bar-fill{height:100%;border-radius:0;transition:width .6s}
+.ind-source{font-size:10px;color:var(--text3);margin-top:.5rem;font-weight:500;letter-spacing:.02em}
+
+/* ── EVAL EMPTY STATE ── */
+#evalEmptyState{text-align:center;padding:3rem;background:var(--bg);border-radius:var(--r);border:1.5px solid var(--text)}
+color:var(--text3);margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<noscript><div style="font-family:Georgia,serif;text-align:center;padding:3rem;background:#FDF6C3;color:#0A0800"><h2>JavaScript required</h2><p style="margin-top:1rem">Please enable JavaScript to use the CSR Evaluation Platform.</p></div></noscript>
+<div id="pageLoader" style="position:fixed;inset:0;background:#EDD832;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1rem">
+  <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#0A0800">Astha Deep</div>
+  <div style="font-size:13px;color:#3A3200;font-weight:600;letter-spacing:.06em;text-transform:uppercase">CSR Evaluation Platform</div>
+  <div style="width:48px;height:3px;background:#0A0800;margin-top:.5rem;animation:ldbar 1.2s ease-in-out infinite alternate"></div>
+</div>
+<style>
+@keyframes ldbar{from{width:24px;opacity:.4}to{width:72px;opacity:1}}
+</style>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="tnbrand">
+    <div class="tnbrand-label">Astha Deep</div>
+    <div class="tnbrand-name">CSR Evaluation Platform</div>
+  </div>
+  <div class="tntabs">
+    <button class="tntab on" onclick="showView('discover',this)"><i class="ti ti-search" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i>Discover</button>
+    <button class="tntab" onclick="showView('evaluate',this)"><i class="ti ti-clipboard-check" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i>Evaluate</button>
+    <button class="tntab" onclick="showView('impact',this)"><i class="ti ti-map-2" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i>Impact Assessment</button>
+  </div>
+  <div class="tncart">
+    <span style="color:var(--text2);font-size:12px">Cart</span>
+    <span class="cart-count-badge" id="navCartBadge">0</span>
+  </div>
+</nav>
+
+<!-- ══ DISCOVER VIEW ══ -->
+<div id="discoverView" class="view on">
+<div class="page">
+  <div class="filterbar">
+    <input type="text" id="searchInput" placeholder="Search by name, location, or programme…" oninput="applyFilters()"/>
+    <div class="filter-group" id="stateFilters">
+      <div class="fchip on" data-val="all" onclick="setFilter('state',this)">All states</div>
+      <div class="fchip" data-val="KA" onclick="setFilter('state',this)">Karnataka</div>
+      <div class="fchip" data-val="MH" onclick="setFilter('state',this)">Maharashtra</div>
+      <div class="fchip" data-val="both" onclick="setFilter('state',this)">Pan-India</div>
+    </div>
+    <div class="filter-group" id="themeFilters">
+      <div class="fchip on" data-val="all" onclick="setFilter('theme',this)">All themes</div>
+      <div class="fchip" data-val="edu" onclick="setFilter('theme',this)">Education</div>
+      <div class="fchip" data-val="live" onclick="setFilter('theme',this)">Livelihoods</div>
+      <div class="fchip" data-val="mix" onclick="setFilter('theme',this)">Mixed</div>
+    </div>
+    <div class="filter-group" id="sizeFilters">
+      <div class="fchip on" data-val="all" onclick="setFilter('size',this)">All sizes</div>
+      <div class="fchip" data-val="large" onclick="setFilter('size',this)">Large (&gt;₹50Cr)</div>
+      <div class="fchip" data-val="mid" onclick="setFilter('size',this)" data-val="mid">Mid (₹10–50Cr)</div>
+      <div class="fchip" data-val="small" onclick="setFilter('size',this)">Small (&lt;₹10Cr)</div>
+    </div>
+    <div class="filter-group" id="fcraFilters">
+      <div class="fchip on" data-val="all" onclick="setFilter('fcra',this)">Any FCRA</div>
+      <div class="fchip" data-val="active" onclick="setFilter('fcra',this)">Active only</div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:.75rem;display:flex;align-items:center;gap:8px">
+    <span id="ngoCount">22 NGOs</span>
+    <span style="color:var(--text3)">·</span>
+    <span>Karnataka & Maharashtra · Education & Livelihoods</span>
+  </div>
+  <div class="ngo-grid" id="ngoGrid"></div>
+</div>
+</div>
+
+<!-- ══ EVALUATE VIEW ══ -->
+<div id="evaluateView" class="view">
+<div class="page">
+  <div id="evalEmptyState" style="text-align:center;padding:3rem;background:var(--bg);border-radius:var(--r);border:0.5px solid var(--border)">
+    <i class="ti ti-clipboard-list" style="font-size:2.5rem;color:var(--text3);margin-bottom:.75rem;display:block"></i>
+    <p style="font-size:14px;font-weight:500;margin-bottom:.5rem">No partners selected</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem">Add NGOs to your cart from the Discover tab to begin evaluation.</p>
+    <button class="primary" style="background:var(--text);color:var(--bg2);border-color:var(--text)" onclick="showView('discover',document.querySelector('.tntab'))">Go to Discover</button>
+  </div>
+  <div id="evalContent" style="display:none">
+    <div class="eval-shell">
+      <div class="eval-header">
+        <div>
+          <div style="font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:4px">Astha Deep · M&E & CSR Advisory</div>
+          <div style="font-size:17px;font-weight:500">CSR Partner Evaluation</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:3px" id="evalSubtitle">Karnataka & Maharashtra · FY 2025–26</div>
+        </div>
+        <div style="text-align:right;font-size:11px;color:var(--text2);line-height:1.9">
+          <div id="evalNgoCount"></div><div>under evaluation</div>
+        </div>
+      </div>
+      <div class="eval-body">
+        <div id="prog"></div>
+        <div class="sp on" id="p1">
+          <p style="font-size:13px;color:var(--text2);margin:0 0 1.25rem;line-height:1.7">You have selected <span id="briefCount" style="font-weight:500;color:var(--text)"></span> NGOs for evaluation. Astha Deep will assess them across six weighted dimensions. Adjust weights in Step 3 to reflect your client's strategic priorities.</p>
+          <div class="met-grid">
+            <div class="met"><div class="met-val" id="mNgo">—</div><div class="met-lbl">NGOs selected</div></div>
+            <div class="met"><div class="met-val" id="mTheme">—</div><div class="met-lbl">Themes</div></div>
+            <div class="met"><div class="met-val" id="mState">—</div><div class="met-lbl">States</div></div>
+            <div class="met"><div class="met-val">6</div><div class="met-lbl">Dimensions</div></div>
+          </div>
+          <div class="two-col">
+            <div class="card"><p style="font-size:12px;font-weight:500;margin-bottom:10px">Selected partners</p><div id="briefList"></div></div>
+            <div class="card"><p style="font-size:12px;font-weight:500;margin-bottom:10px">Evaluation dimensions</p><div id="dimList"></div></div>
+          </div>
+          <div class="card" style="font-size:12px;color:var(--text2);line-height:1.8"><span style="font-weight:500;color:var(--text)">Methodology: </span>Scores based on document review (FCRA certificate, audited statements, annual reports, CSR-1 filings, programme reports). Weights adjustable in Step 3.</div>
+        </div>
+        <div class="sp" id="p2"><p style="font-size:13px;color:var(--text2);margin:0 0 1.25rem">Detailed profiles for each selected partner.</p><div class="profile-grid" id="profileGrid"></div></div>
+        <div class="sp" id="p3">
+          <p style="font-size:13px;color:var(--text2);margin:0 0 1.25rem">Adjust dimension weights to see weighted totals shift in real time.</p>
+          <div class="three-col">
+            <div class="card">
+              <p style="font-size:12px;font-weight:500;margin-bottom:10px">Adjust weights <span style="font-weight:400;color:var(--text2)">(sum to 100)</span></p>
+              <div id="weightControls"></div>
+              <div style="margin-top:10px;padding-top:8px;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Total</span><span id="wtotal" style="font-weight:500;font-family:'DM Mono',monospace">100</span></div>
+            </div>
+            <div>
+              <div class="sgrid" id="scoreMatrix"></div>
+              <div style="margin-top:1rem;position:relative;height:220px"><canvas id="scoreChart" role="img" aria-label="Weighted NGO scores bar chart"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="sp" id="p4">
+          <p style="font-size:13px;color:var(--text2);margin:0 0 1.25rem">Financial health indicators from audited accounts, CSR-1 filings, and MHA FCRA registry. <span class="fl fH">High</span> <span class="fl fM">Medium</span> <span class="fl fOK">Clear</span></p>
+          <div id="finTable"></div>
+          <div style="margin-top:1.25rem"><p style="font-size:12px;font-weight:500;margin-bottom:10px">Red flag summary</p><div id="flagSummary" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div><div id="noFlags" style="display:none;font-size:13px;color:var(--text2);padding:1rem;background:var(--bg2);border-radius:var(--rs)"><i class="ti ti-circle-check" style="color:var(--accent);vertical-align:-2px"></i> No red flags across selected partners.</div></div>
+        </div>
+        <div class="sp" id="p5">
+          <p style="font-size:13px;color:var(--text2);margin:0 0 1.25rem">Partners with High-severity flags or score below 7.0 excluded from primary allocation.</p>
+          <div id="recCards"></div>
+          <div class="card" style="margin-top:1.25rem"><p style="font-size:12px;font-weight:500;margin-bottom:10px">Recommended portfolio allocation</p><div id="allocTable"></div><div id="allocTotals" style="margin-top:10px;padding-top:8px;border-top:0.5px solid var(--border)"></div></div>
+        </div>
+        <div class="nav-bar">
+          <button class="secondary" id="pb" onclick="nav(-1)" disabled style="border-color:var(--text);color:var(--text);background:var(--bg)">← Previous</button>
+          <span id="sl" style="font-size:12px;color:var(--text2)">Step 1 of 5</span>
+          <button class="primary" id="nb" onclick="nav(1)" style="background:var(--text);color:var(--bg2);border-color:var(--text)">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ IMPACT ASSESSMENT VIEW ══ -->
+<div id="impactView" class="view">
+<div class="page">
+  <div class="impact-shell">
+    <div style="padding:1.25rem 1.5rem 1rem;border-bottom:1.5px solid var(--text);background:var(--text)">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.10em;text-transform:uppercase;color:var(--bg2);margin-bottom:4px">Astha Deep · Impact Assessment Layer</div>
+      <div style="font-size:18px;font-weight:700;color:#FDF6C3;font-family:'Playfair Display',Georgia,serif">Impact Assessment & Mapping</div>
+      <div style="font-size:12px;color:rgba(253,246,195,0.6);margin-top:3px">Geographic reach · SDG alignment · Theory of Change · Outcome indicators</div>
+    </div>
+    <div class="impact-subnav">
+      <button class="sntab on" onclick="switchImpact('geo',this)"><i class="ti ti-map-pin" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>Geographic Reach</button>
+      <button class="sntab" onclick="switchImpact('sdg',this)"><i class="ti ti-target" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>SDG Alignment</button>
+      <button class="sntab" onclick="switchImpact('toc',this)"><i class="ti ti-arrow-right-circle" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>Theory of Change</button>
+      <button class="sntab" onclick="switchImpact('ind',this)"><i class="ti ti-chart-bar" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>Outcome Indicators</button>
+    </div>
+
+    <!-- GEOGRAPHIC REACH -->
+    <div class="impact-panel on" id="ip-geo">
+      <p class="impact-intro">Geographic footprint of NGOs across Karnataka and Maharashtra. Toggle between all 22 NGOs or your current cart selection. Dot size reflects relative beneficiary reach. Hover for details.</p>
+      <div class="map-filter">
+        <button class="fchip on" id="mapFilterAll" onclick="setMapFilter('all',this)">Show all NGOs</button>
+        <button class="fchip" id="mapFilterCart" onclick="setMapFilter('cart',this)">Cart selection only</button>
+        <div class="filter-group" style="margin-left:auto">
+          <div class="fchip on" data-val="all" onclick="setMapTheme('all',this)" id="mt-all">All themes</div>
+          <div class="fchip" data-val="edu" onclick="setMapTheme('edu',this)" id="mt-edu">Education</div>
+          <div class="fchip" data-val="live" onclick="setMapTheme('live',this)" id="mt-live">Livelihoods</div>
+          <div class="fchip" data-val="mix" onclick="setMapTheme('mix',this)" id="mt-mix">Mixed</div>
+        </div>
+      </div>
+      <div class="map-layout">
+        <div>
+          <div id="mapWrap"><svg id="mapSvg" viewBox="0 0 580 620"></svg></div>
+          <div class="map-legend">
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#378ADD"></div>Education</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#1D9E75"></div>Livelihoods</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#534AB7"></div>Mixed</div>
+            <div class="map-leg-item" style="font-style:italic">Dot size ∝ beneficiary reach</div>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">NGOs in view</p>
+          <div class="map-sidebar" id="mapSidebar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SDG ALIGNMENT -->
+    <div class="impact-panel" id="ip-sdg">
+      <p class="impact-intro">SDG alignment matrix for all 22 NGOs. ● Primary contribution — the SDG is central to the organisation's theory of change. ◐ Secondary contribution — the NGO's work creates co-benefits toward this goal.</p>
+      <div style="margin-bottom:.75rem;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="fchip on" onclick="setSdgFilter('all',this)">All NGOs</button>
+        <button class="fchip" onclick="setSdgFilter('cart',this)">Cart only</button>
+        <button class="fchip" onclick="setSdgFilter('edu',this)">Education</button>
+        <button class="fchip" onclick="setSdgFilter('live',this)">Livelihoods</button>
+      </div>
+      <div class="sdg-wrap"><div id="sdgMatrix"></div></div>
+      <div class="sdg-legend">
+        <div class="sdg-leg"><div class="sdg-dot-p" style="background:#444"></div>Primary SDG contribution</div>
+        <div class="sdg-leg"><div class="sdg-dot-s" style="background:#444"></div>Secondary contribution</div>
+        <div class="sdg-leg" style="font-size:11px;color:var(--text3)">Source: Astha Deep SDG mapping rubric (FY 2025–26)</div>
+      </div>
+    </div>
+
+    <!-- THEORY OF CHANGE -->
+    <div class="impact-panel" id="ip-toc">
+      <p class="impact-intro">Results chain mapping for CSR-funded interventions in Education and Livelihoods. The Theory of Change (ToC) shows how financial inputs convert to systemic social impact through programme activities and behaviour change.</p>
+      <div class="toc-selector">
+        <button class="toc-btn on" onclick="setToc('edu',this)"><i class="ti ti-school" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>Education</button>
+        <button class="toc-btn" onclick="setToc('live',this)"><i class="ti ti-briefcase" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>Livelihoods</button>
+      </div>
+      <div id="tocFlow"></div>
+      <div style="margin-top:1.25rem;padding:1rem;background:var(--bg2);border-radius:var(--rs);font-size:12px;color:var(--text2);line-height:1.8">
+        <span style="font-weight:500;color:var(--text)">Attribution note: </span>Impact-level change is rarely attributable to a single CSR funder. Sattva's M&E approach uses contribution analysis (not attribution) at the impact level, and outcome-level indicators for CSR accountability reporting.
+      </div>
+    </div>
+
+    <!-- OUTCOME INDICATORS -->
+    <div class="impact-panel" id="ip-ind">
+      <p class="impact-intro">Key outcome indicators tracked across Astha Deep's CSR advisory engagements. Figures are representative benchmarks drawn from published NGO annual reports, ASER data, and MCA CSR-1 disclosures (FY 2023–24).</p>
+      <div class="ind-tabs">
+        <button class="ind-tab on" onclick="setIndTab('edu',this)">Education</button>
+        <button class="ind-tab" onclick="setIndTab('live',this)">Livelihoods</button>
+        <button class="ind-tab" onclick="setIndTab('cross',this)">Cross-cutting</button>
+      </div>
+      <div id="indGrid" class="ind-grid"></div>
+    </div>
+
+  </div><!-- /impact-shell -->
+</div>
+</div>
+
+<!-- CART BAR -->
+<div id="cartBar">
+  <div class="cart-summary">
+    <span class="cart-count-badge" id="cartBadge">0</span>
+    <span class="cart-names" id="cartNames"></span>
+  </div>
+  <div class="cart-actions">
+    <button class="secondary" onclick="clearCart()" style="border-color:var(--bg2);color:var(--bg2)">Clear</button>
+    <button class="primary" onclick="goEvaluate()">Evaluate selected →</button>
+  </div>
+</div>
+
+<div class="map-tooltip" id="mapTooltip"></div>
+
+<script>
+const COLORS=['#1D9E75','#378ADD','#D85A30','#BA7517','#534AB7','#993556','#0F6E56','#185FA5','#993C1D','#854F0B','#3C3489','#72243E','#1D9E75','#378ADD','#D85A30','#BA7517','#534AB7','#993556','#0F6E56','#185FA5','#993C1D','#854F0B'];
+const THEME_COLOR={edu:'#378ADD',live:'#1D9E75',mix:'#534AB7'};
+
+const ALL_NGOS=[
+  {id:0,name:'Akshara Foundation',short:'Akshara',hq:'Bengaluru',state:'KA',est:2000,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:24,budget:'₹24 Cr',bene:'2.3 lakh children/yr',beneNum:230000,prog:'School Resource Programme, Ganitha Kalika Andolan',scores:[8.8,8.7,8.2,8.0,9.5,9.0],util:91,admin:11,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:12.97,lon:77.59,sdgs:[{g:4,t:'p'},{g:10,t:'p'},{g:1,t:'s'},{g:5,t:'s'}]},
+  {id:1,name:'Parikrma Humanity Foundation',short:'Parikrma',hq:'Bengaluru',state:'KA',est:2003,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:8,budget:'₹8 Cr',bene:'1,800 children/yr',beneNum:1800,prog:'Schools for slum children — holistic education, nutrition & healthcare',scores:[8.0,8.5,7.5,7.0,8.5,8.0],util:88,admin:13,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:12.95,lon:77.57,sdgs:[{g:4,t:'p'},{g:3,t:'s'},{g:10,t:'s'},{g:1,t:'s'}]},
+  {id:2,name:'Dream a Dream',short:'Dream',hq:'Bengaluru',state:'KA',est:1999,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:12,budget:'₹12 Cr',bene:'28,000 youth/yr',beneNum:28000,prog:'Life skills coaching for vulnerable adolescents, teacher capacity building',scores:[8.2,8.0,7.8,7.5,8.0,8.5],util:90,admin:12,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:12.98,lon:77.61,sdgs:[{g:4,t:'p'},{g:10,t:'p'},{g:3,t:'s'},{g:1,t:'s'}]},
+  {id:3,name:'Samarthanam Trust',short:'Samarth.',hq:'Bengaluru',state:'KA',est:1997,theme:'mix',themeLabel:'Education + Livelihoods',fcra:'Active',budgetNum:35,budget:'₹35 Cr',bene:'75,000 PwD/yr',beneNum:75000,prog:'Education, skilling, and sports for persons with disability',scores:[9.0,8.8,8.5,8.2,8.0,8.5],util:92,admin:10,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:12.93,lon:77.65,sdgs:[{g:4,t:'p'},{g:8,t:'p'},{g:10,t:'p'},{g:1,t:'s'}]},
+  {id:4,name:'Swami Vivekananda Youth Movement',short:'SVYM',hq:'Mysuru',state:'KA',est:1984,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:18,budget:'₹18 Cr',bene:'1.5 lakh/yr',beneNum:150000,prog:'Tribal livelihoods, health, and education in Mysuru–Kodagu belt',scores:[9.2,9.0,8.8,8.5,8.5,8.0],util:94,admin:9,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:12.30,lon:76.64,sdgs:[{g:1,t:'p'},{g:3,t:'p'},{g:8,t:'p'},{g:10,t:'s'},{g:2,t:'s'}]},
+  {id:5,name:'Vikasana',short:'Vikasana',hq:'Davangere',state:'KA',est:2006,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:5,budget:'₹5 Cr',bene:'12,000 SHG women/yr',beneNum:12000,prog:'Women SHG-linked livelihoods and microfinance linkage in N. Karnataka',scores:[7.5,7.8,7.0,6.5,8.5,7.0],util:85,admin:15,audit:'Clean (FY23)',csr1:'Filed',flags:[{sev:'M',text:'FY24 audit not yet submitted'}],lat:14.46,lon:75.92,sdgs:[{g:1,t:'p'},{g:5,t:'p'},{g:8,t:'p'},{g:10,t:'s'}]},
+  {id:6,name:'Concerned for Working Children',short:'CWC',hq:'Bengaluru',state:'KA',est:1980,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:6,budget:'₹6 Cr',bene:'22,000 children/yr',beneNum:22000,prog:'Child labour elimination, Makkala Panchayat child governance model',scores:[8.0,8.2,7.5,7.8,8.5,8.0],util:89,admin:14,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:12.99,lon:77.55,sdgs:[{g:4,t:'p'},{g:8,t:'p'},{g:1,t:'s'},{g:10,t:'s'}]},
+  {id:7,name:'Gramin Vikas Trust',short:'GVT',hq:'Bengaluru',state:'KA',est:2003,theme:'mix',themeLabel:'Livelihood + Education',fcra:'Under renewal',budgetNum:4.2,budget:'₹4.2 Cr',bene:'9,500/yr',beneNum:9500,prog:'Agri-livelihoods, rural school infrastructure support',scores:[5.5,6.5,5.8,5.0,7.5,6.0],util:74,admin:22,audit:'FY24 not filed',csr1:'Delayed',flags:[{sev:'H',text:'FCRA under renewal — disbursement legally restricted'},{sev:'H',text:'FY24 audit not filed — Schedule VII non-compliance risk'},{sev:'M',text:'Low fund utilization: 74%'}],lat:13.20,lon:77.50,sdgs:[{g:1,t:'p'},{g:4,t:'s'},{g:8,t:'s'}]},
+  {id:8,name:'Gram Vikas Samithi',short:'GVS',hq:'Tumkur',state:'KA',est:2001,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:3,budget:'₹3 Cr',bene:'6,800/yr',beneNum:6800,prog:'Rural livelihoods, dryland farming support, water conservation',scores:[6.5,7.0,6.2,5.8,8.0,6.5],util:78,admin:19,audit:'Qualification (FY24)',csr1:'Filed',flags:[{sev:'M',text:'Audit qualification on fixed assets'},{sev:'M',text:'Utilization at 78% — below threshold'}],lat:13.34,lon:77.10,sdgs:[{g:1,t:'p'},{g:2,t:'s'},{g:8,t:'s'},{g:15,t:'s'}]},
+  {id:9,name:'Pratham Education Foundation',short:'Pratham',hq:'Mumbai',state:'MH',est:1994,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:380,budget:'₹380 Cr',bene:'1.2 Cr+ children/yr',beneNum:12000000,prog:'ASER assessments, Learning Camps, Hybrid Digital Learning',scores:[9.2,9.0,8.8,9.5,9.0,8.5],util:94,admin:8,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:19.08,lon:72.88,sdgs:[{g:4,t:'p'},{g:10,t:'p'},{g:1,t:'s'},{g:17,t:'s'}]},
+  {id:10,name:'SEWA Bharat',short:'SEWA',hq:'Mumbai',state:'MH',est:1984,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:42,budget:'₹42 Cr',bene:'1.8 lakh women/yr',beneNum:180000,prog:'Home-based worker skilling, SHG-linked credit access (MH operations)',scores:[8.5,8.8,7.8,7.5,8.0,8.0],util:87,admin:14,audit:'FY24 pending',csr1:'Filed',flags:[{sev:'M',text:'FY24 audit pending submission'}],lat:19.10,lon:72.85,sdgs:[{g:1,t:'p'},{g:5,t:'p'},{g:8,t:'p'},{g:10,t:'s'}]},
+  {id:11,name:'Magic Bus India Foundation',short:'Magic Bus',hq:'Mumbai',state:'MH',est:1999,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:45,budget:'₹45 Cr',bene:'3.5 lakh youth/yr',beneNum:350000,prog:'Sport-for-development, adolescent life skills, rural youth employment',scores:[9.0,8.8,8.8,8.5,8.5,8.8],util:93,admin:9,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:19.05,lon:72.90,sdgs:[{g:3,t:'s'},{g:4,t:'p'},{g:10,t:'p'},{g:8,t:'s'}]},
+  {id:12,name:'Apnalaya',short:'Apnalaya',hq:'Mumbai',state:'MH',est:1973,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:9,budget:'₹9 Cr',bene:'40,000 urban poor/yr',beneNum:40000,prog:'Urban slum livelihoods, women economic empowerment, civic access',scores:[8.0,8.2,8.0,7.5,8.5,8.0],util:91,admin:13,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:19.02,lon:72.87,sdgs:[{g:1,t:'p'},{g:8,t:'p'},{g:10,t:'p'},{g:11,t:'s'},{g:5,t:'s'}]},
+  {id:13,name:'Catalysts for Social Action',short:'CSA',hq:'Pune',state:'MH',est:2008,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:8.5,budget:'₹8.5 Cr',bene:'18,000 workers/yr',beneNum:18000,prog:'Urban livelihood clusters, vocational training hubs',scores:[7.5,7.8,7.5,6.5,8.5,7.0],util:88,admin:16,audit:'Minor qualification (FY24)',csr1:'Filed',flags:[{sev:'M',text:'Audit qualification on asset valuation'},{sev:'M',text:'M&E system under development — no third-party eval in 2 yrs'}],lat:18.52,lon:73.86,sdgs:[{g:8,t:'p'},{g:10,t:'p'},{g:11,t:'s'},{g:1,t:'s'}]},
+  {id:14,name:'iTeach Schools',short:'iTeach',hq:'Pune',state:'MH',est:2007,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:6,budget:'₹6 Cr',bene:'4,200 students/yr',beneNum:4200,prog:'Quality secondary education for municipal school students in Pune',scores:[8.0,8.5,7.8,7.5,8.0,8.2],util:90,admin:12,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:18.55,lon:73.84,sdgs:[{g:4,t:'p'},{g:10,t:'p'},{g:1,t:'s'}]},
+  {id:15,name:'Masoom',short:'Masoom',hq:'Mumbai',state:'MH',est:2001,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:4,budget:'₹4 Cr',bene:'11,000 migrant children/yr',beneNum:11000,prog:'Education for migrant brick-kiln children, bridge learning centres',scores:[7.5,7.8,7.0,6.8,8.5,7.5],util:86,admin:16,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:19.07,lon:72.83,sdgs:[{g:4,t:'p'},{g:10,t:'p'},{g:1,t:'s'}]},
+  {id:16,name:'Mann Deshi Foundation',short:'Mann Deshi',hq:'Satara',state:'MH',est:1997,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:15,budget:'₹15 Cr',bene:'1 lakh rural women/yr',beneNum:100000,prog:'Women entrepreneurship, Mann Deshi Bank, rural business training',scores:[8.8,9.0,8.5,8.0,9.0,8.5],util:93,admin:10,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:17.68,lon:74.02,sdgs:[{g:1,t:'p'},{g:5,t:'p'},{g:8,t:'p'},{g:10,t:'s'}]},
+  {id:17,name:'Hamara Foundation',short:'Hamara',hq:'Nashik',state:'MH',est:2010,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:3.5,budget:'₹3.5 Cr',bene:'8,000 tribal families/yr',beneNum:8000,prog:'Tribal livelihoods — NTFP value chain, agri-input cooperatives',scores:[7.0,7.2,6.8,6.5,8.0,7.0],util:82,admin:18,audit:'Clean (FY23)',csr1:'Filed',flags:[{sev:'M',text:'FY24 audit pending — expected Q1 FY26'}],lat:20.00,lon:73.79,sdgs:[{g:1,t:'p'},{g:2,t:'s'},{g:8,t:'s'},{g:15,t:'s'}]},
+  {id:18,name:'Ummeed Child Development Center',short:'Ummeed',hq:'Mumbai',state:'MH',est:1997,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:11,budget:'₹11 Cr',bene:'18,000 children/yr',beneNum:18000,prog:'Early intervention and therapy for children with developmental disabilities',scores:[8.5,8.5,8.2,7.8,8.0,8.5],util:91,admin:11,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:18.98,lon:72.83,sdgs:[{g:3,t:'p'},{g:4,t:'p'},{g:10,t:'p'}]},
+  {id:19,name:'Teach For India',short:'TFI',hq:'Mumbai',state:'both',est:2008,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:82,budget:'₹82 Cr',bene:'37,000 children/yr',beneNum:37000,prog:'Placing top graduates as teachers in low-income schools (Mumbai, Pune, Bengaluru)',scores:[9.0,9.0,8.5,8.8,8.5,8.5],util:92,admin:11,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:19.06,lon:72.91,sdgs:[{g:4,t:'p'},{g:10,t:'p'},{g:1,t:'s'},{g:17,t:'s'}]},
+  {id:20,name:'Nudge Foundation',short:'Nudge',hq:'Bengaluru',state:'both',est:2012,theme:'live',themeLabel:'Livelihoods',fcra:'Active',budgetNum:55,budget:'₹55 Cr',bene:'2 lakh youth/yr',beneNum:200000,prog:'Livelihoods skilling, entrepreneur development, financial inclusion for youth',scores:[8.8,8.5,8.5,8.2,8.5,8.8],util:91,admin:10,audit:'Clean (FY24)',csr1:'Filed',flags:[],lat:13.02,lon:77.62,sdgs:[{g:1,t:'p'},{g:8,t:'p'},{g:10,t:'p'},{g:17,t:'s'}]},
+  {id:21,name:'Yuwa India',short:'Yuwa',hq:'Pune',state:'MH',est:2009,theme:'edu',themeLabel:'Education',fcra:'Active',budgetNum:2,budget:'₹2 Cr',bene:'3,200 girls/yr',beneNum:3200,prog:'Football-based learning and education for adolescent girls in rural Maharashtra',scores:[6.8,7.5,6.2,6.0,8.0,6.5],util:80,admin:20,audit:'Clean (FY23)',csr1:'Filed',flags:[{sev:'M',text:'FY24 audit pending'},{sev:'M',text:'Admin overhead at 20% — above threshold'}],lat:18.50,lon:73.88,sdgs:[{g:4,t:'p'},{g:5,t:'p'},{g:10,t:'s'}]}
+];
+ALL_NGOS.forEach((n,i)=>n.color=COLORS[i%COLORS.length]);
+
+// SDG metadata
+const SDGS=[
+  {g:1,label:'No Poverty',color:'#E5243B'},
+  {g:2,label:'Zero Hunger',color:'#DDA63A'},
+  {g:3,label:'Good Health',color:'#4C9F38'},
+  {g:4,label:'Quality Education',color:'#C5192D'},
+  {g:5,label:'Gender Equality',color:'#FF3A21'},
+  {g:8,label:'Decent Work & Growth',color:'#A21942'},
+  {g:10,label:'Reduced Inequalities',color:'#DD1367'},
+  {g:11,label:'Sustainable Cities',color:'#FD9D24'},
+  {g:15,label:'Life on Land',color:'#56C02B'},
+  {g:17,label:'Partnerships',color:'#19486A'}
+];
+
+const DIMS=['Governance & Compliance','Programme Quality','Financial Health','M&E Capacity','Mission Alignment','Partnership Readiness'];
+const DIMSHORT=['Governance','Programme','Financial','M&E','Mission','Partnership'];
+let weights=[20,25,20,20,10,5];
+let cart=new Set();
+let activeFilters={state:'all',theme:'all',size:'all',fcra:'all'};
+let evalNgos=[];
+let cur=1;
+let chartInst=null;
+let mapFilter='all';
+let mapTheme='all';
+let sdgFilter='all';
+let indTab='edu';
+let tocTheme='edu';
+let mapInited=false;
+
+function wScore(n){return n.scores.reduce((s,sc,i)=>s+sc*weights[i]/100,0);}
+function scClass(v){return v>=8?'scH':v>=7?'scM':'scL';}
+function sizeOf(n){return n.budgetNum>=50?'large':n.budgetNum>=10?'mid':'small';}
+
+// VIEW SWITCHING
+function showView(v,tabEl){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
+  document.getElementById(v+'View').classList.add('on');
+  document.querySelectorAll('.tntab').forEach(t=>t.classList.remove('on'));
+  if(tabEl) tabEl.classList.add('on');
+  else{const tabs=document.querySelectorAll('.tntab');const map={discover:0,evaluate:1,impact:2};const idx=map[v];if(idx!==undefined)tabs[idx].classList.add('on');}
+  if(v==='evaluate') refreshEval();
+  if(v==='impact'&&!mapInited){setTimeout(()=>{initMap();buildSdgMatrix('all');buildToc('edu');buildInd('edu');},100);}
+}
+
+// FILTERS
+function setFilter(type,el){
+  document.querySelectorAll('#'+type+'Filters .fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  activeFilters[type]=el.dataset.val;
+  applyFilters();
+}
+function applyFilters(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const visible=ALL_NGOS.filter(n=>{
+    if(activeFilters.state!=='all'&&n.state!==activeFilters.state)return false;
+    if(activeFilters.theme!=='all'&&n.theme!==activeFilters.theme)return false;
+    if(activeFilters.size!=='all'&&sizeOf(n)!==activeFilters.size)return false;
+    if(activeFilters.fcra==='active'&&n.fcra!=='Active')return false;
+    if(q&&!n.name.toLowerCase().includes(q)&&!n.hq.toLowerCase().includes(q)&&!n.prog.toLowerCase().includes(q))return false;
+    return true;
+  });
+  document.getElementById('ngoCount').textContent=visible.length+' NGOs';
+  renderGrid(visible);
+}
+function renderGrid(ngos){
+  const g=document.getElementById('ngoGrid');g.innerHTML='';
+  if(!ngos.length){g.innerHTML='<div class="empty-state"><i class="ti ti-search-off" style="font-size:2rem;margin-bottom:.5rem;display:block"></i>No NGOs match your filters.</div>';return;}
+  ngos.forEach(n=>{
+    const inCart=cart.has(n.id);
+    const ws=wScore(n).toFixed(1);const wsf=parseFloat(ws);
+    const scoreColor=wsf>=8.5?'#1D9E75':wsf>=7?'#BA7517':'#A32D2D';
+    const flagCount=n.flags.length;
+    const div=document.createElement('div');
+    div.className='ngocard'+(inCart?' incart':'');div.id='card_'+n.id;
+    div.innerHTML=`<div style="display:flex;align-items:flex-start;gap:8px">
+      <div class="avatar" style="background:${n.color}22;color:${n.color}">${n.short.slice(0,2).toUpperCase()}</div>
+      <div class="card-meta">
+        <div class="card-name" title="${n.name}">${n.name}</div>
+        <div class="card-loc">${n.hq} · est. ${n.est}</div>
+      </div>
+      <span class="ptag ${n.theme}">${n.themeLabel}</span></div>
+    <div class="card-stats">
+      <span style="color:var(--text2);font-size:11px"><i class="ti ti-map-pin" style="font-size:11px"></i> ${n.hq}, ${n.state==='both'?'KA+MH':n.state}</span>
+      <span style="font-size:11px"><i class="ti ti-certificate" style="font-size:11px"></i> <span style="color:${n.fcra==='Active'?'#1D9E75':'#BA7517'}">${n.fcra}</span></span>
+      <span style="color:var(--text2);font-size:11px"><i class="ti ti-coin" style="font-size:11px"></i> ${n.budget}</span>
+      <span style="color:var(--text2);font-size:11px"><i class="ti ti-users" style="font-size:11px"></i> ${n.bene}</span>
+    </div>
+    <div style="font-size:11px;color:var(--text2);border-top:0.5px solid var(--border);padding-top:6px;line-height:1.4">${n.prog}</div>
+    <div class="score-row">
+      <div class="sbar"><div class="sbf" style="width:${(wsf/10*100).toFixed(0)}%;background:${n.color}"></div></div>
+      <span class="score-num" style="color:${scoreColor}">${ws}</span>
+      ${flagCount>0?`<span class="fl ${n.flags.some(f=>f.sev==='H')?'fH':'fM'}">${flagCount} flag${flagCount>1?'s':''}</span>`:'<span class="fl fOK">Clean</span>'}
+    </div>
+    <button class="cart-btn" onclick="toggleCart(${n.id})">${inCart?'<i class="ti ti-minus" style="font-size:11px;vertical-align:-1px"></i> Remove':'<i class="ti ti-plus" style="font-size:11px;vertical-align:-1px"></i> Add to evaluation'}</button>`;
+    g.appendChild(div);
+  });
+}
+
+// CART
+function toggleCart(id){
+  if(cart.has(id))cart.delete(id);else cart.add(id);
+  updateCartBar();applyFilters();
+  document.getElementById('navCartBadge').textContent=cart.size;
+}
+function clearCart(){cart.clear();updateCartBar();applyFilters();document.getElementById('navCartBadge').textContent=0;}
+function updateCartBar(){
+  const bar=document.getElementById('cartBar');
+  const n=cart.size;
+  if(n===0){bar.classList.remove('visible');return;}
+  bar.classList.add('visible');
+  document.getElementById('cartBadge').textContent=n+' selected';
+  const names=ALL_NGOS.filter(ng=>cart.has(ng.id)).map(ng=>ng.short).join(' · ');
+  document.getElementById('cartNames').textContent=names;
+}
+function goEvaluate(){
+  const tabs=document.querySelectorAll('.tntab');
+  showView('evaluate',tabs[1]);
+}
+
+// EVAL
+function refreshEval(){
+  const ec=document.getElementById('evalContent');
+  const ee=document.getElementById('evalEmptyState');
+  if(cart.size===0){ec.style.display='none';ee.style.display='block';return;}
+  ec.style.display='block';ee.style.display='none';
+  evalNgos=ALL_NGOS.filter(ng=>cart.has(ng.id)).sort((a,b)=>wScore(b)-wScore(a));
+  cur=1;chartInst=null;
+  document.querySelectorAll('.sp').forEach((el,i)=>el.classList.toggle('on',i===0));
+  document.getElementById('nb').disabled=false;document.getElementById('pb').disabled=true;
+  document.getElementById('sl').textContent='Step 1 of 5';
+  ['profileGrid','weightControls','scoreMatrix','finTable','flagSummary','recCards','allocTable','dimList','briefList'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  document.getElementById('flagSummary').style.display='grid';document.getElementById('noFlags').style.display='none';
+  document.getElementById('evalNgoCount').textContent=evalNgos.length+' NGOs';
+  buildProgress();buildBrief();buildDimList();
+}
+
+function buildProgress(){
+  const c=document.getElementById('prog');c.innerHTML='';
+  ['Mandate Brief','Partner Profiles','Scoring Matrix','Financial Health','Recommendation'].forEach((s,i)=>{
+    const step=i+1;const div=document.createElement('div');div.className='pgstep';
+    const dn=step<cur?'done':step===cur?'on':'';
+    div.innerHTML=`<div class="pgdot ${dn}">${step<cur?'<i class="ti ti-check" style="font-size:12px"></i>':step}</div><div class="pglbl ${step===cur?'on':''}">${s}</div>`;
+    c.appendChild(div);if(i<4){const l=document.createElement('div');l.className='pgline';c.appendChild(l);}
+  });
+}
+function buildBrief(){
+  document.getElementById('briefCount').textContent=evalNgos.length+' NGOs';
+  document.getElementById('mNgo').textContent=evalNgos.length;
+  document.getElementById('mTheme').textContent=[...new Set(evalNgos.map(n=>n.theme))].length;
+  document.getElementById('mState').textContent=[...new Set(evalNgos.map(n=>n.state))].length;
+  const bl=document.getElementById('briefList');
+  evalNgos.forEach(n=>{const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--border);font-size:12px';row.innerHTML=`<span style="color:var(--text2)">${n.name}</span><span class="ptag ${n.theme}">${n.themeLabel}</span>`;bl.appendChild(row);});
+}
+function buildDimList(){
+  const c=document.getElementById('dimList');
+  DIMS.forEach((d,i)=>{const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--border);font-size:12px';row.innerHTML=`<span style="color:var(--text2)">${DIMSHORT[i]}</span><span style="font-weight:500">${weights[i]}%</span>`;c.appendChild(row);});
+}
+function buildProfiles(){
+  const c=document.getElementById('profileGrid');if(c.children.length>0)return;
+  evalNgos.forEach(n=>{
+    const div=document.createElement('div');div.className='card';const ws=wScore(n).toFixed(1);const wsf=parseFloat(ws);
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="width:32px;height:32px;border-radius:50%;background:${n.color}22;color:${n.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;margin-bottom:5px">${n.short.slice(0,2).toUpperCase()}</div><p style="font-size:13px;font-weight:500;margin:0">${n.name}</p><p style="font-size:11px;color:var(--text2);margin:2px 0 0">${n.hq} · est. ${n.est}</p></div><span class="ptag ${n.theme}">${n.themeLabel}</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;font-size:11px;margin-bottom:8px"><span style="color:var(--text2)"><i class="ti ti-map-pin" style="font-size:11px;vertical-align:-1px"></i> ${n.hq}</span><span style="color:var(--text2)"><i class="ti ti-certificate" style="font-size:11px;vertical-align:-1px"></i> <span style="color:${n.fcra==='Active'?'#1D9E75':'#BA7517'}">${n.fcra}</span></span><span style="color:var(--text2)"><i class="ti ti-coin" style="font-size:11px;vertical-align:-1px"></i> ${n.budget}</span><span style="color:var(--text2)"><i class="ti ti-users" style="font-size:11px;vertical-align:-1px"></i> ${n.bene}</span></div><div style="font-size:11px;color:var(--text2);border-top:0.5px solid var(--border);padding-top:6px;margin-bottom:7px;line-height:1.4"><span style="font-weight:500;color:var(--text)">Programme: </span>${n.prog}</div><div style="display:flex;align-items:center;gap:8px"><div style="flex:1"><div class="sbar"><div class="sbf" style="width:${(wsf/10*100).toFixed(0)}%;background:${n.color}"></div></div></div><span style="font-size:12px;font-weight:500;font-family:'DM Mono',monospace;color:${wsf>=8?'#1D9E75':wsf>=7?'#BA7517':'#A32D2D'}">${ws}</span></div>`;
+    c.appendChild(div);
+  });
+}
+function buildWeightControls(){
+  const c=document.getElementById('weightControls');if(c.children.length>0)return;
+  DIMS.forEach((d,i)=>{const row=document.createElement('div');row.className='wrow';row.innerHTML=`<div><div style="font-size:12px;margin-bottom:2px">${DIMSHORT[i]}</div><input type="range" min="0" max="50" step="5" value="${weights[i]}" data-i="${i}"></div><div style="font-size:12px;font-weight:500;text-align:right;font-family:'DM Mono',monospace" id="wv${i}">${weights[i]}%</div>`;c.appendChild(row);});
+  c.querySelectorAll('input').forEach(inp=>{inp.addEventListener('input',()=>{const i=+inp.dataset.i;weights[i]=+inp.value;document.getElementById('wv'+i).textContent=weights[i]+'%';const tot=weights.reduce((a,b)=>a+b,0);const wt=document.getElementById('wtotal');wt.textContent=tot;wt.style.color=tot===100?'#1D9E75':'#A32D2D';updateScoreMatrix();updateScoreChart();});});
+}
+function buildScoreMatrix(){
+  const c=document.getElementById('scoreMatrix');c.innerHTML='';const n=evalNgos.length;c.style.gridTemplateColumns=`140px repeat(${n},1fr)`;
+  const hdr=document.createElement('div');hdr.style.cssText='font-size:11px;font-weight:500;color:var(--text2);padding:5px 0';hdr.textContent='Dimension';c.appendChild(hdr);
+  evalNgos.forEach(ng=>{const h=document.createElement('div');h.className='shd';h.textContent=ng.short;c.appendChild(h);});
+  DIMS.forEach((d,di)=>{const lbl=document.createElement('div');lbl.className='sdim';lbl.textContent=d;c.appendChild(lbl);evalNgos.forEach((ng,ni)=>{const cell=document.createElement('div');cell.className='scel '+scClass(ng.scores[di]);cell.id=`sc_${di}_${ni}`;cell.textContent=ng.scores[di].toFixed(1);c.appendChild(cell);});});
+  const totlbl=document.createElement('div');totlbl.style.cssText='font-size:12px;font-weight:500;padding:7px 0;border-top:1.5px solid var(--border2)';totlbl.textContent='Weighted total';c.appendChild(totlbl);
+  evalNgos.forEach((ng,ni)=>{const cell=document.createElement('div');cell.className='stot '+scClass(wScore(ng));cell.id='stot_'+ni;cell.textContent=wScore(ng).toFixed(2);c.appendChild(cell);});
+}
+function updateScoreMatrix(){evalNgos.forEach((ng,ni)=>{const tot=document.getElementById('stot_'+ni);if(tot){const ws=wScore(ng);tot.textContent=ws.toFixed(2);tot.className='stot '+scClass(ws);}});}
+function buildScoreChart(){
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  const ctx=document.getElementById('scoreChart');if(!ctx)return;
+  chartInst=new Chart(ctx,{type:'bar',data:{labels:evalNgos.map(n=>n.short),datasets:[{label:'Weighted score',data:evalNgos.map(n=>+wScore(n).toFixed(2)),backgroundColor:evalNgos.map(n=>n.color+'BB'),borderColor:evalNgos.map(n=>n.color),borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Score: ${c.parsed.x.toFixed(2)} / 10`}}},scales:{x:{min:0,max:10,ticks:{font:{size:11}},grid:{color:'rgba(128,128,128,0.1)'}},y:{ticks:{font:{size:11}}}}}});
+}
+function updateScoreChart(){if(!chartInst)return;chartInst.data.datasets[0].data=evalNgos.map(n=>+wScore(n).toFixed(2));chartInst.update();}
+function buildFinTable(){
+  const c=document.getElementById('finTable');if(c.children.length>0)return;
+  let html=`<div style="overflow-x:auto"><table><thead><tr>`;
+  ['Organization','FCRA','Utilization','Admin','FY24 Audit','CSR-1','Flags'].forEach(h=>html+=`<th>${h}</th>`);
+  html+=`</tr></thead><tbody>`;
+  evalNgos.forEach(n=>{html+=`<tr><td style="font-weight:500;white-space:nowrap">${n.short}</td><td><span class="fl ${n.fcra==='Active'?'fOK':'fH'}">${n.fcra}</span></td><td><span class="fl ${n.util>=90?'fOK':n.util>=80?'fM':'fH'}">${n.util}%</span></td><td><span class="fl ${n.admin<=12?'fOK':n.admin<=18?'fM':'fH'}">${n.admin}%</span></td><td><span class="fl ${n.audit.includes('Clean')?'fOK':n.audit.includes('not filed')?'fH':'fM'}">${n.audit}</span></td><td><span class="fl ${n.csr1==='Filed'?'fOK':'fH'}">${n.csr1}</span></td><td>${n.flags.length===0?'<span class="fl fOK">None</span>':n.flags.map(f=>`<span class="fl f${f.sev}">${f.sev==='H'?'High':'Med'}</span>`).join('')}</td></tr>`;});
+  html+=`</tbody></table></div>`;c.innerHTML=html;
+  const fs=document.getElementById('flagSummary');const flagged=evalNgos.filter(n=>n.flags.length>0);
+  if(!flagged.length){fs.style.display='none';document.getElementById('noFlags').style.display='block';}
+  else{flagged.forEach(n=>{const div=document.createElement('div');div.className='card';let fhtml=`<p style="font-size:12px;font-weight:500;margin-bottom:6px">${n.name}</p>`;n.flags.forEach(f=>{fhtml+=`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px"><span class="fl f${f.sev}" style="flex-shrink:0">${f.sev==='H'?'High':'Medium'}</span><span style="font-size:11px;color:var(--text2)">${f.text}</span></div>`;});div.innerHTML=fhtml;fs.appendChild(div);});}
+}
+function buildRec(){
+  const c=document.getElementById('recCards');if(c.children.length>0)return;
+  const sorted=[...evalNgos].sort((a,b)=>wScore(b)-wScore(a));
+  const selected=[],conditional=[],notRec=[];
+  sorted.forEach(n=>{const ws=wScore(n);const hasHigh=n.flags.some(f=>f.sev==='H');if(hasHigh)notRec.push(n);else if(ws>=8.0)selected.push(n);else if(ws>=7.0)conditional.push(n);else notRec.push(n);});
+  sorted.forEach(n=>{
+    const ws=wScore(n);const hasHigh=n.flags.some(f=>f.sev==='H');
+    const inSel=selected.includes(n);const inCond=conditional.includes(n);
+    const div=document.createElement('div');div.className='rec-card'+(inSel?' sel-card':notRec.includes(n)?' notrec':'');
+    const badge=hasHigh?`<span class="fl fH">Not recommended</span>`:inSel?`<span class="fl fOK">Selected</span>`:`<span class="fl fM">Conditional</span>`;
+    const rationale=hasHigh?`Excluded — ${n.flags.filter(f=>f.sev==='H').map(f=>f.text.split('—')[0].trim()).join('; ')}`:ws>=9?'Exceptional scores. Anchor partner recommended.':ws>=8?'Strong across all dimensions. Low compliance risk.':ws>=7?'Solid programme quality. Minor gaps manageable via MOU conditions.':'Score below 7.0 threshold.';
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><p style="font-size:13px;font-weight:500;margin:0">${n.name}</p>${badge}</div><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="ptag ${n.theme}">${n.themeLabel}</span><span class="ptag geo">${n.hq}</span></div></div><div style="text-align:right"><div style="font-size:20px;font-weight:500;font-family:'DM Mono',monospace;color:${ws>=8?'#1D9E75':ws>=7?'#BA7517':'#A32D2D'}">${ws.toFixed(2)}</div><div style="font-size:10px;color:var(--text2)">/ 10.00</div></div></div><p style="margin:8px 0 0;font-size:12px;color:var(--text2)">${rationale}</p>`;
+    c.appendChild(div);
+  });
+  const at=document.getElementById('allocTable');const allRec=[...selected,...conditional];
+  if(!allRec.length){at.innerHTML='<p style="font-size:13px;color:var(--text2)">No partners meet the minimum threshold. Refine your shortlist.</p>';return;}
+  let html=`<table><thead><tr>`;['Partner','Allocation','Theme','Status','Note'].forEach(h=>html+=`<th>${h}</th>`);html+=`</tr></thead><tbody>`;
+  allRec.forEach((n,i)=>{const isC=conditional.includes(n);const share=isC?0.5:Math.max(0.5,(8*(1-0.5*conditional.length/allRec.length)/Math.max(selected.length,1)));html+=`<tr><td style="font-weight:500">${n.name}</td><td style="font-weight:500;font-family:'DM Mono',monospace;color:#1D9E75">₹${share.toFixed(1)} Cr</td><td><span class="ptag ${n.theme}">${n.themeLabel}</span></td><td><span class="fl ${isC?'fM':'fOK'}">${isC?'Conditional':'Selected'}</span></td><td style="font-size:11px;color:var(--text2)">${isC?'Subject to MOU compliance conditions':'Clean compliance, strong score'}</td></tr>`;});
+  html+=`</tbody></table>`;at.innerHTML=html;
+  document.getElementById('allocTotals').innerHTML=`<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">Locked</span><span style="font-weight:500">${selected.length} partners</span></div><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Conditional</span><span style="font-weight:500">${conditional.length} partners</span></div>`;
+}
+
+function nav(d){
+  cur=Math.max(1,Math.min(5,cur+d));
+  document.querySelectorAll('.sp').forEach((el,i)=>el.classList.toggle('on',i+1===cur));
+  document.getElementById('sl').textContent=`Step ${cur} of 5`;
+  document.getElementById('pb').disabled=cur===1;document.getElementById('nb').disabled=cur===5;
+  buildProgress();
+  if(cur===2)buildProfiles();if(cur===3){buildWeightControls();buildScoreMatrix();buildScoreChart();}if(cur===4)buildFinTable();if(cur===5)buildRec();
+}
+
+// ══ IMPACT ASSESSMENT ══
+function switchImpact(panel,tabEl){
+  document.querySelectorAll('.sntab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.impact-panel').forEach(p=>p.classList.remove('on'));
+  tabEl.classList.add('on');
+  document.getElementById('ip-'+panel).classList.add('on');
+  if(panel==='geo'&&!mapInited)initMap();
+  if(panel==='sdg')buildSdgMatrix(sdgFilter);
+  if(panel==='toc')buildToc(tocTheme);
+  if(panel==='ind')buildInd(indTab);
+}
+
+// MAP
+function setMapFilter(f,el){
+  mapFilter=f;
+  document.querySelectorAll('#ip-geo .map-filter .fchip:not([data-val])').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderMapDots();renderMapSidebar();
+}
+function setMapTheme(t,el){
+  mapTheme=t;
+  ['all','edu','live','mix'].forEach(v=>document.getElementById('mt-'+v)&&document.getElementById('mt-'+v).classList.remove('on'));
+  el.classList.add('on');
+  renderMapDots();renderMapSidebar();
+}
+function getMapNgos(){
+  let ngos=ALL_NGOS;
+  if(mapFilter==='cart')ngos=ngos.filter(n=>cart.has(n.id));
+  if(mapTheme!=='all')ngos=ngos.filter(n=>n.theme===mapTheme);
+  return ngos;
+}
+let projFn=null;
+function initMap(){
+  mapInited=true;
+  const svg=d3.select('#mapSvg');
+  const w=580,h=620;
+  const proj=d3.geoMercator().center([80,22]).scale(950).translate([w/2,h/2+60]);
+  projFn=proj;
+  const path=d3.geoPath().projection(proj);
+  const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  d3.json('https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/ind.topo.json').then(india=>{
+    const key=Object.keys(india.objects)[0];
+    const features=topojson.feature(india,india.objects[key]).features;
+    svg.selectAll('path.state').data(features).join('path').attr('class','state')
+      .attr('d',path)
+      .attr('fill',d=>{
+        const name=(d.properties.NAME_1||d.properties.name||d.properties.st_nm||'').toLowerCase();
+        if(name.includes('karnataka'))return '#F5E64A';
+        if(name.includes('maharashtra'))return '#EDD832';
+        return '#f5f0d0';
+      })
+      .attr('stroke','rgba(10,8,0,0.18)')
+      .attr('stroke-width',0.5);
+    // State labels
+    features.forEach(d=>{
+      const name=(d.properties.NAME_1||d.properties.name||d.properties.st_nm||'');
+      if(name.toLowerCase().includes('karnataka')||name.toLowerCase().includes('maharashtra')){
+        const c=path.centroid(d);
+        if(!isNaN(c[0])){
+          svg.append('text').attr('x',c[0]).attr('y',c[1]).attr('text-anchor','middle').attr('font-size','9').attr('font-family','DM Sans,sans-serif').attr('fill','rgba(10,8,0,0.45)').attr('pointer-events','none').text(name.toLowerCase().includes('karnataka')?'Karnataka':'Maharashtra');
+        }
+      }
+    });
+    renderMapDots();renderMapSidebar();
+  }).catch(()=>{
+    svg.append('text').attr('x',290).attr('y',310).attr('text-anchor','middle').attr('font-size','13').attr('font-family','DM Sans,sans-serif').attr('fill','var(--text2)').text('Map loading failed — check network');
+  });
+}
+function renderMapDots(){
+  if(!projFn)return;
+  const svg=d3.select('#mapSvg');
+  svg.selectAll('circle.ngodot').remove();
+  svg.selectAll('text.ngolabel').remove();
+  const ngos=getMapNgos();
+  const maxBene=Math.max(...ALL_NGOS.map(n=>n.beneNum));
+  const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const tip=document.getElementById('mapTooltip');
+  ngos.forEach(n=>{
+    const [x,y]=projFn([n.lon,n.lat]);
+    if(isNaN(x))return;
+    const r=Math.max(6,Math.min(20,6+14*(Math.log(n.beneNum)/Math.log(maxBene))));
+    const col=THEME_COLOR[n.theme];
+    svg.append('circle').attr('class','ngodot').attr('cx',x).attr('cy',y).attr('r',r).attr('fill',col+'BB').attr('stroke',col).attr('stroke-width',1.5).attr('cursor','pointer')
+      .on('mousemove',(event)=>{tip.style.display='block';tip.style.left=(event.clientX+12)+'px';tip.style.top=(event.clientY-40)+'px';tip.innerHTML=`<strong style="font-size:13px;color:var(--bg2)">${n.name}</strong><br><span style="font-size:11px;color:var(--text2)">${n.hq} · ${n.themeLabel}</span><br><span style="font-size:11px">${n.bene} · ${n.budget}</span>`;})
+      .on('mouseleave',()=>{tip.style.display='none';});
+  });
+}
+function renderMapSidebar(){
+  const sb=document.getElementById('mapSidebar');sb.innerHTML='';
+  const ngos=getMapNgos();
+  if(!ngos.length){sb.innerHTML='<p style="font-size:12px;color:var(--text3);padding:.5rem">No NGOs in view</p>';return;}
+  ngos.forEach(n=>{
+    const ws=wScore(n).toFixed(1);const wsf=parseFloat(ws);
+    const div=document.createElement('div');div.className='map-ngo-item';
+    div.innerHTML=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px"><div style="width:8px;height:8px;border-radius:50%;background:${THEME_COLOR[n.theme]};flex-shrink:0"></div><span style="font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n.name}</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:${wsf>=8?'#1D9E75':wsf>=7?'#BA7517':'#A32D2D'}">${ws}</span></div><div style="font-size:10px;color:var(--text2)">${n.hq} · ${n.bene}</div>`;
+    sb.appendChild(div);
+  });
+}
+
+// SDG MATRIX
+function setSdgFilter(f,el){
+  sdgFilter=f;
+  document.querySelectorAll('#ip-sdg .fchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+  buildSdgMatrix(f);
+}
+function buildSdgMatrix(f){
+  let ngos=ALL_NGOS;
+  if(f==='cart')ngos=ngos.filter(n=>cart.has(n.id));
+  else if(f==='edu'||f==='live')ngos=ngos.filter(n=>n.theme===f);
+  const c=document.getElementById('sdgMatrix');
+  let html=`<table class="sdg-table"><thead><tr><th style="position:sticky;left:0;background:var(--bg);z-index:2">SDG Goal</th>`;
+  ngos.forEach(n=>html+=`<th title="${n.name}">${n.short}</th>`);
+  html+=`</tr></thead><tbody>`;
+  SDGS.forEach(sdg=>{
+    html+=`<tr><td style="position:sticky;left:0;background:var(--bg);z-index:1"><div style="display:flex;align-items:center;gap:7px"><div class="sdg-badge" style="background:${sdg.color};color:#fff">${sdg.g}</div><span style="font-size:11px">SDG ${sdg.g}: ${sdg.label}</span></div></td>`;
+    ngos.forEach(n=>{
+      const match=n.sdgs.find(s=>s.g===sdg.g);
+      if(match&&match.t==='p')html+=`<td><div class="sdg-dot-p" style="background:${sdg.color};margin:0 auto" title="Primary"></div></td>`;
+      else if(match&&match.t==='s')html+=`<td><div class="sdg-dot-s" style="background:${sdg.color};margin:0 auto" title="Secondary"></div></td>`;
+      else html+=`<td><span style="color:var(--text3);font-size:10px">—</span></td>`;
+    });
+    html+=`</tr>`;
+  });
+  // Coverage count row
+  html+=`<tr style="border-top:1.5px solid var(--border2)"><td style="position:sticky;left:0;background:var(--bg2);font-weight:500;font-size:11px;z-index:1">SDG coverage</td>`;
+  ngos.forEach(n=>{const cnt=n.sdgs.length;html+=`<td style="text-align:center;font-size:12px;font-weight:500;background:var(--bg2);font-family:'DM Mono',monospace">${cnt}</td>`;});
+  html+=`</tr></tbody></table>`;
+  c.innerHTML=html;
+}
+
+// THEORY OF CHANGE
+function setToc(theme,el){
+  tocTheme=theme;document.querySelectorAll('.toc-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');buildToc(theme);
+}
+function buildToc(theme){
+  const c=document.getElementById('tocFlow');
+  const tocData={
+    edu:{
+      color:'#378ADD',
+      cols:[
+        {label:'Inputs',bg:'#E6F1FB',tc:'#0C447C',items:[{t:'CSR Funding',b:'Annual disbursement to implementation partner per approved workplan'},{t:'Programme Design',b:'Astha Deep ToC review + M&E framework design'},{t:'Capacity Building',b:'NGO staff training on data collection and reporting'}]},
+        {label:'Activities',bg:'#E6F1FB',tc:'#0C447C',items:[{t:'Teacher Training',b:'Structured in-service training, classroom observation cycles'},{t:'Curriculum Support',b:'Learning materials, remedial content, digital tools'},{t:'Community Engagement',b:'Parent committees, local government coordination'},{t:'Baseline & Monitoring',b:'Student assessments at start, mid, and end of year'}]},
+        {label:'Outputs',bg:'#B5D4F4',tc:'#0C447C',items:[{t:'Schools Supported',b:'# govt schools receiving sustained programme support'},{t:'Teachers Trained',b:'# teachers completing certified training modules'},{t:'Materials Distributed',b:'# children receiving learning kits and resources'},{t:'Assessments Conducted',b:'# ASER-style learning level assessments completed'}]},
+        {label:'Outcomes',bg:'#378ADD',tc:'#fff',items:[{t:'Learning Levels Improve',b:'% children at grade-appropriate reading/numeracy (vs baseline)'},{t:'Attendance Rises',b:'School attendance rate increases among programme cohort'},{t:'Teacher Quality Up',b:'Classroom observation scores improve post-training'},{t:'Parent Participation',b:'% active parent committee members increases'}]},
+        {label:'Impact',bg:'#185FA5',tc:'#fff',items:[{t:'Education Access',b:'Marginalised children complete quality schooling cycles'},{t:'Economic Mobility',b:'Children enter labour market with stronger foundational skills'},{t:'Gender Parity',b:'Girl enrolment and retention gaps narrow over 3–5 year horizon'},{t:'System Strengthening',b:'Govt school system absorbs programme learnings'}]}
+      ]
+    },
+    live:{
+      color:'#1D9E75',
+      cols:[
+        {label:'Inputs',bg:'#E1F5EE',tc:'#085041',items:[{t:'CSR Funding',b:'Annual disbursement to implementation partner per approved workplan'},{t:'Programme Design',b:'Astha Deep livelihoods needs assessment + theory of change'},{t:'Market Research',b:'Value chain and employer demand mapping pre-programme'}]},
+        {label:'Activities',bg:'#E1F5EE',tc:'#085041',items:[{t:'Skill Training',b:'Sector-specific vocational training (60–300 hours per trainee)'},{t:'SHG Formation',b:'Self-help group mobilisation, savings and credit linkage'},{t:'Market Linkage',b:'Employer connects, buyer tie-ups, market access facilitation'},{t:'Financial Literacy',b:'Banking access, credit awareness, digital payment adoption'}]},
+        {label:'Outputs',bg:'#9FE1CB',tc:'#085041',items:[{t:'Persons Trained',b:'# individuals completing certified skill training modules'},{t:'SHGs Formed',b:'# self-help groups formed and actively meeting'},{t:'Placements Made',b:'# trainees placed in wage employment or self-employment'},{t:'Savings Mobilised',b:'₹ corpus built across SHG savings accounts'}]},
+        {label:'Outcomes',bg:'#1D9E75',tc:'#fff',items:[{t:'Income Increases',b:'% trainees reporting income above pre-programme baseline at 6 months'},{t:'Employment Sustained',b:'% placed individuals still employed at 12-month follow-up'},{t:'SHG Savings Built',b:'Average SHG corpus per group at 12 months'},{t:'Financial Inclusion',b:'% members with active bank account and formal credit access'}]},
+        {label:'Impact',bg:'#0F6E56',tc:'#fff',items:[{t:'Poverty Reduction',b:'Household income crosses poverty line in multi-year tracking'},{t:'Gender Equality',b:'Women\'s economic agency and household decision-making power'},{t:'Community Resilience',b:'SHG networks provide safety nets during income shocks'},{t:'Systemic Change',b:'Local labour markets shift to absorb skilled workers at scale'}]}
+      ]
+    }
+  };
+  const t=tocData[theme];
+  let html=`<div style="display:grid;grid-template-columns:repeat(5,1fr) ;gap:8px;align-items:start">`;
+  t.cols.forEach((col,ci)=>{
+    html+=`<div><div style="background:${col.bg};color:${col.tc};font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:6px 6px 0 0;text-align:center;margin-bottom:6px">${col.label}</div><div style="display:flex;flex-direction:column;gap:5px">`;
+    col.items.forEach(item=>{html+=`<div style="font-size:11px;line-height:1.4;padding:7px 9px;border-radius:5px;border:0.5px solid var(--border);background:var(--bg);color:var(--text2)"><strong style="display:block;font-size:10px;font-weight:500;color:var(--text);margin-bottom:2px">${item.t}</strong>${item.b}</div>`;});
+    html+=`</div>`;
+    if(ci<4)html+=`</div><div style="display:flex;align-items:flex-start;justify-content:center;padding-top:18px;font-size:20px;color:var(--text3)">→</div>`;
+    else html+=`</div>`;
+  });
+  html+=`</div>`;
+  c.innerHTML=html;
+}
+
+// INDICATORS
+const IND_DATA={
+  edu:[
+    {title:'Learning Level Improvement',meta:'% children at grade-appropriate level · ASER-aligned assessment',bars:[{label:'Baseline (pre-programme)',val:32,color:'#B5D4F4'},{label:'Midline (6 months)',val:51,color:'#378ADD'},{label:'Endline (12 months)',val:68,color:'#185FA5'}],source:'Source: NGO annual reports (FY 2023–24), ASER 2023 Karnataka data'},
+    {title:'School Attendance Rate',meta:'% students attending on assessment day · programme schools vs control',bars:[{label:'Control schools',val:71,color:'#B5D4F4'},{label:'Programme schools',val:86,color:'#185FA5'}],source:'Source: MCA CSR-1 disclosures, Akshara Foundation Annual Report FY24'},
+    {title:'Teacher Training Completion',meta:'% enrolled teachers completing full certification module',bars:[{label:'Year 1 cohort',val:78,color:'#B5D4F4'},{label:'Year 2 cohort',val:88,color:'#378ADD'},{label:'Year 3 cohort',val:93,color:'#185FA5'}],source:'Source: TFI Fellow Reports, iTeach programme data FY24'},
+    {title:'Girl Enrolment Parity',meta:'Girls as % of total enrolment · programme schools',bars:[{label:'Pre-programme',val:44,color:'#B5D4F4'},{label:'Year 2',val:48,color:'#378ADD'},{label:'Year 3',val:51,color:'#185FA5'}],source:'Source: Astha Deep baseline-endline analysis, Karnataka DISE data'}
+  ],
+  live:[
+    {title:'Income Improvement',meta:'% trainees reporting income above pre-programme baseline · 6-month follow-up',bars:[{label:'3-month post-placement',val:61,color:'#9FE1CB'},{label:'6-month post-placement',val:74,color:'#1D9E75'},{label:'12-month post-placement',val:68,color:'#0F6E56'}],source:'Source: SEWA Bharat FY24 impact report, Mann Deshi annual data'},
+    {title:'Employment Retention',meta:'% placed individuals still in employment at each follow-up',bars:[{label:'3 months',val:82,color:'#9FE1CB'},{label:'6 months',val:71,color:'#1D9E75'},{label:'12 months',val:62,color:'#0F6E56'}],source:'Source: Nudge Foundation FY24, CSA follow-up survey data'},
+    {title:'SHG Savings Mobilised',meta:'Average corpus per SHG at 12 months (₹ thousands)',bars:[{label:'Vikasana cohort',val:48,color:'#9FE1CB'},{label:'Mann Deshi cohort',val:87,color:'#1D9E75'},{label:'SEWA Bharat cohort',val:72,color:'#0F6E56'}],source:'Source: NGO financial statements, SHG registration data (FY24)'},
+    {title:'Financial Inclusion Access',meta:'% beneficiaries with active bank account post-programme',bars:[{label:'Pre-programme',val:38,color:'#9FE1CB'},{label:'Post-programme',val:79,color:'#0F6E56'}],source:'Source: Apnalaya FY24, Hamara Foundation baseline-endline'}
+  ],
+  cross:[
+    {title:'Cost Per Beneficiary Efficiency',meta:'₹ CSR spend per direct beneficiary reached · FY 2023–24 average',bars:[{label:'Education NGOs avg',val:52,color:'#378ADD'},{label:'Livelihoods NGOs avg',val:68,color:'#1D9E75'},{label:'Mixed theme avg',val:61,color:'#534AB7'}],source:'Source: MCA CSR-1 filings, Astha Deep cost analysis (FY24)'},
+    {title:'Fund Utilization Rate',meta:'% of disbursed CSR funds spent by financial year end',bars:[{label:'High-performing partners',val:94,color:'#1D9E75'},{label:'Portfolio average',val:88,color:'#BA7517'},{label:'Underperforming partners',val:74,color:'#A32D2D'}],source:'Source: Astha Deep M&E audit, NGO audited financials'},
+    {title:'Admin Overhead Ratio',meta:'% of total expenditure on admin/management (benchmark: ≤15%)',bars:[{label:'Best-in-class (target)',val:8,color:'#1D9E75'},{label:'Portfolio average',val:13,color:'#378ADD'},{label:'Flagged threshold',val:20,color:'#A32D2D'}],source:'Source: MCA CSR-1 Schedule VII disclosures, Astha Deep analysis'},
+    {title:'M&E Report Submission Rate',meta:'% of partner NGOs submitting quarterly M&E reports on time',bars:[{label:'Q1 FY24',val:72,color:'#9FE1CB'},{label:'Q2 FY24',val:81,color:'#1D9E75'},{label:'Q3 FY24',val:88,color:'#0F6E56'},{label:'Q4 FY24',val:86,color:'#0F6E56'}],source:'Source: Astha Deep advisory engagement tracker, internal data'}
+  ]
+};
+function setIndTab(tab,el){
+  indTab=tab;document.querySelectorAll('.ind-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');buildInd(tab);
+}
+function buildInd(tab){
+  const c=document.getElementById('indGrid');c.innerHTML='';
+  IND_DATA[tab].forEach(card=>{
+    const div=document.createElement('div');div.className='ind-card';
+    let html=`<div class="ind-title">${card.title}</div><div class="ind-meta">${card.meta}</div>`;
+    card.bars.forEach(b=>{html+=`<div class="ind-bar-wrap"><div class="ind-bar-label"><span>${b.label}</span><span style="font-weight:500;font-family:'DM Mono',monospace">${b.val}${tab==='live'&&card.title.includes('Savings')?'k':'%'}</span></div><div class="ind-bar-track"><div class="ind-bar-fill" style="width:${b.val}%;background:${b.color}"></div></div></div>`;});
+    html+=`<div class="ind-source">${card.source}</div>`;
+    div.innerHTML=html;c.appendChild(div);
+  });
+}
+
+// INIT
+applyFilters();
+
+// Hide loader
+window.addEventListener('DOMContentLoaded', function() {
+  var ld = document.getElementById('pageLoader');
+  if(ld) setTimeout(function(){ ld.style.opacity='0'; ld.style.transition='opacity .4s'; setTimeout(function(){ld.style.display='none'},400); }, 300);
+});
+
+</script>
+</body>
+</html>
